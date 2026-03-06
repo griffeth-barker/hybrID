@@ -1,14 +1,14 @@
 {
-    "Settings":  {
-                     "OnPremExchangeFqdn":  "mail.domain.tld",
-                     "Theme":  "Light"
-                 },
-    "ManagementUrls":  {
-                           "EntraUser":  "https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserProfileMenuBlade/~/overview/userId/{id}",
-                           "EntraGroup":  "https://entra.microsoft.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/{id}",
-                           "ExoMailbox":  "https://admin.exchange.microsoft.com/#/mailboxes/:/MailboxDetails/{id}",
-                           "ExoGroup":  "https://admin.exchange.microsoft.com/#/groups/:/GroupDetails/{id}/2",
-                           "OnPremEcpMailbox":  "https://{fqdn}/ecp/UsersGroups/EditRemoteMailbox.aspx?pwmcid=5\u0026ReturnObjectType=1\u0026id={id}",
-                           "OnPremEcpGroup":  "https://{fqdn}/ecp/UsersGroups/EditSecurityDistributionGroup.aspx?pwmcid=3\u0026ReturnObjectType=1\u0026id={id}"
-                       }
+    "Settings": {
+        "OnPremExchangeFqdn": "mail.domain.tld",
+        "Theme": "System"
+    },
+    "ManagementUrls": {
+        "EntraUser": "https://entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserProfileMenuBlade/~/overview/userId/{id}",
+        "EntraGroup": "https://entra.microsoft.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/{id}",
+        "ExoMailbox": "https://admin.exchange.microsoft.com/#/mailboxes/:/MailboxDetails/{id}",
+        "ExoGroup": "https://admin.exchange.microsoft.com/#/groups/:/GroupDetails/{id}/2",
+        "OnPremEcpMailbox": "https://{fqdn}/ecp/UsersGroups/EditRemoteMailbox.aspx?pwmcid=5&ReturnObjectType=1&id={id}",
+        "OnPremEcpGroup": "https://{fqdn}/ecp/UsersGroups/EditSecurityDistributionGroup.aspx?pwmcid=3&ReturnObjectType=1&id={id}"
+    }
 }
