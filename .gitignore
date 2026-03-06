@@ -1,0 +1,3 @@
+# Ignore the releases directory that is used for temporary export of the wrapped script
+releases
+releases/*
