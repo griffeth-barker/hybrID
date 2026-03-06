@@ -53,6 +53,12 @@ hybrID features a dynamic theming engine (Dark, Light, and System). If you are a
     - Use `CornerRadius="8"` for larger panels.
 
   - **Icons**: Use the native Windows **Segoe MDL2 Assets** font for icons instead of emojis or external images. (e.g., `&#xE713;` for the Settings gear).
+  - **Window Icons (Popups & Child Windows)**: Child windows spawned by the main window should always inherit its application icon in the Title Bar:
+   ```powershell
+   if ($global:MainWindow.Icon) {
+       $TargetWindow.Icon = $global:MainWindow.Icon
+   }
+   ```
 
 ## Coding Standards
   - **PowerShell Version**: Code must be compatible with Windows PowerShell 5.1 (the default on most admin workstations).
