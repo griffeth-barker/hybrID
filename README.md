@@ -32,7 +32,7 @@ For more information, visit the [docs](/docs]).
 
 ## Screenshots
 ### Main Window (Pre-Search)
-![](/assets/screenshot-main-ui.png)
+![](/assets/screenshot-main-presearch.png)
 
 For more screenshots, see [screenshots](/docs/screenshots.md).
 
