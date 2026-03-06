@@ -12,6 +12,8 @@ In environments utilizing On-Premises Active Directory synced to Entra ID (Azure
   - **Modern UI:** Built on WPF featuring a dark theme, hover tooltips, and a dynamic status bar.
   - **Frictionless Authentication:** Silently caches Microsoft Graph API tokens to prevent repetitive login prompts.
 
+To view the roadmap/potential future features, check out the [roadmap](/docs/roadmap.md)!
+
 
 ## Prerequisites
 To run this application, the technician's workstation must have the following installed:
