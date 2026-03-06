@@ -12,5 +12,5 @@
 ## Configuration Window
 ![](/assets/screenshot-configuration.png)
 
-## About Windows
+## About Window
 ![](/assets/screenshot-about.png)
