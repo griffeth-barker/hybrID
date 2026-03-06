@@ -8,7 +8,7 @@
         </Grid.RowDefinitions>
         
         <StackPanel Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center">
-            <TextBlock Text="hybrID v0.1.0" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryText}" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+            <TextBlock Text="hybrID v0.1.1" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryText}" HorizontalAlignment="Center" Margin="0,0,0,5"/>
             <TextBlock Text="Griffeth Barker 2026" FontSize="14" Foreground="{DynamicResource SecondaryText}" HorizontalAlignment="Center" Margin="0,0,0,5"/>
             <TextBlock Text="Open Source under the MIT license" FontSize="14" Foreground="{DynamicResource SecondaryText}" HorizontalAlignment="Center" Margin="0,0,0,15"/>
             
