@@ -1,9 +1,7 @@
 function Show-Settings {
     function Set-WindowIcon ($TargetWindow) {
-        $iconPath = Join-Path -Path $global:assetsDir -ChildPath "hybrID-icon-nobg-x128.ico"
-        if (Test-Path $iconPath) {
-            $iconUri = [System.Uri]::new($iconPath, [System.UriKind]::Absolute)
-            $TargetWindow.Icon = [System.Windows.Media.Imaging.BitmapFrame]::Create($iconUri)
+        if ($global:MainWindow.Icon) {
+            $TargetWindow.Icon = $global:MainWindow.Icon
         }
     }
 

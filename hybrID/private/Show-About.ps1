@@ -8,14 +8,8 @@ function Show-About {
     Apply-Theme -TargetWindow $aboutWindow 
 
     # Load and apply the app icon
-    $iconPath = Join-Path -Path $global:assetsDir -ChildPath "hybrID-icon.ico"
-    if (Test-Path $iconPath) {
-        $bmp = New-Object System.Windows.Media.Imaging.BitmapImage
-        $bmp.BeginInit()
-        $bmp.UriSource = [System.Uri]::new($iconPath, [System.UriKind]::Absolute)
-        $bmp.CacheOption = [System.Windows.Media.Imaging.BitmapCacheOption]::OnLoad
-        $bmp.EndInit()
-        $aboutWindow.Icon = $bmp
+    if ($global:MainWindow.Icon) {
+        $aboutWindow.Icon = $global:MainWindow.Icon
     }
 
     $btnClose = $aboutWindow.FindName("btnClose")
