@@ -34,8 +34,7 @@ For more information, visit the [docs](/docs]).
 ### Main Window (Pre-Search)
 ![](/assets/screenshot-main-ui.png)
 
-### Main Window (Post-Search)
-![](/assets/screenshot-main-ui-with-search.png)
+For more screenshots, see [screenshots](/docs/screenshots.md).
 
 ## Repository Structure
 This application is built using a modular PowerShell structure, separating the presentation layer (XAML) from the logic layer (private functions) and the execution layer. There is a public controller script to invoke the application.
