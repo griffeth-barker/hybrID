@@ -31,6 +31,7 @@ $privateDir = Join-Path -Path $moduleBase -ChildPath "private"
 $global:uiDir     = Join-Path -Path $moduleBase -ChildPath "ui"
 $global:assetsDir = Join-Path -Path $moduleBase -ChildPath "assets"
 $global:configDir = Join-Path -Path $moduleBase -ChildPath "config"
+$global:logsDir   = Join-Path -Path $moduleBase -ChildPath "logs"
 
 # Import presentation layer & Icon
 $xamlPath = Join-Path -Path $global:uiDir -ChildPath "main.xaml"
@@ -77,6 +78,8 @@ $valName = $window.FindName("valName")
 $valClass = $window.FindName("valClass")
 $txtManageIdentity = $window.FindName("txtManageIdentity")
 $txtManageExchange = $window.FindName("txtManageExchange")
+$txtSoaState = $window.FindName("txtSoaState")
+$btnTransferSoa = $window.FindName("btnTransferSoa")
 $valNotes = $window.FindName("valNotes")
 
 $brushConverter = New-Object System.Windows.Media.BrushConverter
@@ -91,6 +94,7 @@ foreach ($script in $privateScripts) {
 $btnSettings.Add_Click({ Show-Settings })
 $btnAbout.Add_Click({ Show-About })
 $btnSearch.Add_Click({ Invoke-Search })
+$btnTransferSoa.Add_Click({ Invoke-SoaTransfer })
 $txtSearch.Add_KeyDown({ if ($_.Key -eq 'Return') { Invoke-Search } })
 
 $window.Add_Loaded({

@@ -5,6 +5,8 @@ function Invoke-Search {
         return
     }
 
+    $global:CurrentSearchContext = $null
+
     Clear-Fields
     Set-Status "Searching Active Directory and Graph API for '$identity'..." "#CA5100"
     
@@ -17,14 +19,18 @@ function Invoke-Search {
         if ($adObject -and $adObject.UserPrincipalName) { 
             $upnToSearchInGraph = $adObject.UserPrincipalName 
         }
-    } catch {}
+    } catch {
+        Write-HybrIDLog -Source "Invoke-Search.AD" -Message "Active Directory lookup failed." -Exception $_.Exception -Context @{ Identity = $identity }
+    }
 
     try {
         $mgObject = Get-MgUser -UserId $upnToSearchInGraph -ErrorAction SilentlyContinue
         if (-not $mgObject) {
             $mgObject = Get-MgGroup -Filter "mail eq '$identity' or displayName eq '$identity'" -ErrorAction SilentlyContinue | Select-Object -First 1
         }
-    } catch {}
+    } catch {
+        Write-HybrIDLog -Source "Invoke-Search.Graph" -Message "Graph user/group lookup failed." -Exception $_.Exception -Context @{ Identity = $identity; GraphLookup = $upnToSearchInGraph }
+    }
 
     $entraUrl = $null
     $exoUrl = $null
@@ -84,6 +90,42 @@ function Invoke-Search {
             Set-Link -TextBlock $txtManageIdentity -Text "Active Directory" -Url $null
         }
 
+        $isSyncedUser = ($adObject.ObjectClass -eq "user" -and $mgObject -and $mgObject.AdditionalProperties["@odata.type"] -like "*user*")
+        if ($isSyncedUser) {
+            $global:CurrentSearchContext = @{
+                Identity = $identity
+                AdObject = $adObject
+                MgObject = $mgObject
+                IsCloudManaged = $null
+            }
+
+            try {
+                $soaGetUri = "https://graph.microsoft.com/v1.0/users/$($mgObject.Id)/onPremisesSyncBehavior?`$select=isCloudManaged"
+                $soaResponse = Invoke-MgGraphRequest -Method GET -Uri $soaGetUri -ErrorAction Stop
+                if ($soaResponse.PSObject.Properties.Name -contains "isCloudManaged") {
+                    $global:CurrentSearchContext.IsCloudManaged = $soaResponse.isCloudManaged
+                }
+            } catch {
+                Write-HybrIDLog -Source "Invoke-Search.SOA" -Message "SOA state lookup failed." -Exception $_.Exception -Context @{ Identity = $identity; UserId = $mgObject.Id }
+            }
+
+            if ($global:CurrentSearchContext.IsCloudManaged -eq $true) {
+                $txtSoaState.Text = "Cloud-managed (Entra ID)"
+                $btnTransferSoa.Content = "Revert SOA to On-Premises"
+            } elseif ($global:CurrentSearchContext.IsCloudManaged -eq $false) {
+                $txtSoaState.Text = "On-premises managed (AD DS)"
+                $btnTransferSoa.Content = "Transfer SOA to Entra ID"
+            } else {
+                $txtSoaState.Text = "Unknown (check Graph permission)"
+                $btnTransferSoa.Content = "Refresh/Transfer SOA"
+            }
+
+            $btnTransferSoa.Visibility = "Visible"
+        } else {
+            $txtSoaState.Text = "N/A"
+            $btnTransferSoa.Visibility = "Collapsed"
+        }
+
     } elseif ($mgObject) {
         Set-Status "Object located in Entra ID." "#16825D"
         $valName.Text = $mgObject.DisplayName
@@ -96,9 +138,13 @@ function Invoke-Search {
         
         Set-Link -TextBlock $txtManageIdentity -Text "Entra ID" -Url $entraUrl
         Set-Link -TextBlock $txtManageExchange -Text "Exchange Online" -Url $exoUrl
+        $txtSoaState.Text = "N/A"
+        $btnTransferSoa.Visibility = "Collapsed"
         
         $valNotes.Text = "This object does not exist in Active Directory. Manage it entirely in M365/Entra ID."
     } else {
         Set-Status "Object not found in Active Directory or Entra ID." "#D03E3D"
+        $txtSoaState.Text = "N/A"
+        $btnTransferSoa.Visibility = "Collapsed"
     }
 }

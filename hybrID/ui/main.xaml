@@ -92,6 +92,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="Object Name" Margin="0,0,0,15"/>
@@ -108,6 +109,12 @@
 
                     <TextBlock Grid.Row="4" Grid.Column="0" Text="Mail Management" Margin="0,0,0,0"/>
                     <TextBlock x:Name="txtManageExchange" Grid.Row="4" Grid.Column="1" Margin="5,0,0,0" />
+
+                    <TextBlock Grid.Row="5" Grid.Column="0" Text="SOA Management" Margin="0,15,0,0" VerticalAlignment="Top"/>
+                    <StackPanel Grid.Row="5" Grid.Column="1" Orientation="Vertical" Margin="5,15,0,0">
+                        <TextBlock x:Name="txtSoaState" Text="N/A" Margin="0,0,0,8" />
+                        <Button x:Name="btnTransferSoa" Content="Transfer SOA to Entra ID" Width="230" HorizontalAlignment="Left" Visibility="Collapsed"/>
+                    </StackPanel>
                 </Grid>
             </Border>
         </Grid>

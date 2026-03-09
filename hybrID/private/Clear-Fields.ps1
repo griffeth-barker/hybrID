@@ -3,5 +3,7 @@ function Clear-Fields {
     $valClass.Text = ""
     $txtManageIdentity.Text = ""
     $txtManageExchange.Text = ""
+    $txtSoaState.Text = "N/A"
+    $btnTransferSoa.Visibility = "Collapsed"
     $valNotes.Text = ""
 }
