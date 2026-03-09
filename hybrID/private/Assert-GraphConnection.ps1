@@ -5,7 +5,7 @@ function Assert-GraphConnection {
     if ($null -eq $context) {
         Set-Status "Waiting for Graph API sign-in..." "#CA5100"
         try {
-            Connect-MgGraph -Scopes "User.Read.All", "Group.Read.All", "User-OnPremisesSyncBehavior.ReadWrite.All" -NoWelcome
+            Connect-MgGraph -Scopes "User.Read.All", "Group.Read.All", "User-OnPremisesSyncBehavior.ReadWrite.All", "Group-OnPremisesSyncBehavior.ReadWrite.All" -NoWelcome
             Set-Status "Ready" "#007ACC" 
         } catch {
             Write-HybrIDLog -Source "Assert-GraphConnection" -Message "Graph sign-in failed or was canceled." -Exception $_.Exception

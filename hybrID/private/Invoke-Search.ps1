@@ -119,6 +119,8 @@ function Invoke-Search {
         }
 
         $isSyncedUser = ($adObject.ObjectClass -eq "user" -and $mgObject -and $mgObject.AdditionalProperties["@odata.type"] -like "*user*")
+        $isSyncedGroup = ($adObject.ObjectClass -eq "group" -and $mgObject -and $mgObject.AdditionalProperties["@odata.type"] -like "*group*")
+
         if ($isSyncedUser) {
             $global:CurrentSearchContext = @{
                 Identity = $identity
@@ -134,7 +136,7 @@ function Invoke-Search {
                     $global:CurrentSearchContext.IsCloudManaged = $soaResponse.isCloudManaged
                 }
             } catch {
-                Write-HybrIDLog -Source "Invoke-Search.SOA" -Message "SOA state lookup failed." -Exception $_.Exception -Context @{ Identity = $identity; UserId = $mgObject.Id }
+                Write-HybrIDLog -Source "Invoke-Search.SOA" -Message "User SOA state lookup failed." -Exception $_.Exception -Context @{ Identity = $identity; UserId = $mgObject.Id }
             }
 
             if ($global:CurrentSearchContext.IsCloudManaged -eq $true) {
@@ -149,9 +151,42 @@ function Invoke-Search {
             }
 
             $btnTransferSoa.Visibility = "Visible"
+            $btnTransferGroupSoa.Visibility = "Collapsed"
+        } elseif ($isSyncedGroup) {
+            $global:CurrentSearchContext = @{
+                Identity = $identity
+                AdObject = $adObject
+                MgObject = $mgObject
+                IsCloudManaged = $null
+            }
+
+            try {
+                $soaGetUri = "https://graph.microsoft.com/v1.0/groups/$($mgObject.Id)/onPremisesSyncBehavior?`$select=isCloudManaged"
+                $soaResponse = Invoke-MgGraphRequest -Method GET -Uri $soaGetUri -ErrorAction Stop
+                if ($soaResponse.PSObject.Properties.Name -contains "isCloudManaged") {
+                    $global:CurrentSearchContext.IsCloudManaged = $soaResponse.isCloudManaged
+                }
+            } catch {
+                Write-HybrIDLog -Source "Invoke-Search.SOA" -Message "Group SOA state lookup failed." -Exception $_.Exception -Context @{ Identity = $identity; GroupId = $mgObject.Id }
+            }
+
+            if ($global:CurrentSearchContext.IsCloudManaged -eq $true) {
+                $txtSoaState.Text = "Cloud-managed (Entra ID)"
+                $btnTransferGroupSoa.Content = "Revert SOA to On-Premises"
+            } elseif ($global:CurrentSearchContext.IsCloudManaged -eq $false) {
+                $txtSoaState.Text = "On-premises managed (AD DS)"
+                $btnTransferGroupSoa.Content = "Transfer SOA to Entra ID"
+            } else {
+                $txtSoaState.Text = "Unknown (check Graph permission)"
+                $btnTransferGroupSoa.Content = "Refresh/Transfer SOA"
+            }
+
+            $btnTransferSoa.Visibility = "Collapsed"
+            $btnTransferGroupSoa.Visibility = "Visible"
         } else {
             $txtSoaState.Text = "N/A"
             $btnTransferSoa.Visibility = "Collapsed"
+            $btnTransferGroupSoa.Visibility = "Collapsed"
         }
 
     } elseif ($mgObject) {
@@ -196,9 +231,11 @@ function Invoke-Search {
 
         $txtSoaState.Text = "N/A"
         $btnTransferSoa.Visibility = "Collapsed"
+        $btnTransferGroupSoa.Visibility = "Collapsed"
     } else {
         Set-Status "Object not found in Active Directory or Entra ID." "#D03E3D"
         $txtSoaState.Text = "N/A"
         $btnTransferSoa.Visibility = "Collapsed"
+        $btnTransferGroupSoa.Visibility = "Collapsed"
     }
 }

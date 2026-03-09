@@ -80,6 +80,7 @@ $txtManageIdentity = $window.FindName("txtManageIdentity")
 $txtManageExchange = $window.FindName("txtManageExchange")
 $txtSoaState = $window.FindName("txtSoaState")
 $btnTransferSoa = $window.FindName("btnTransferSoa")
+$btnTransferGroupSoa = $window.FindName("btnTransferGroupSoa")
 $valNotes = $window.FindName("valNotes")
 
 $brushConverter = New-Object System.Windows.Media.BrushConverter
@@ -95,6 +96,7 @@ $btnSettings.Add_Click({ Show-Settings })
 $btnAbout.Add_Click({ Show-About })
 $btnSearch.Add_Click({ Invoke-Search })
 $btnTransferSoa.Add_Click({ Invoke-SoaTransfer })
+$btnTransferGroupSoa.Add_Click({ Invoke-GroupSoaTransfer })
 $txtSearch.Add_KeyDown({ if ($_.Key -eq 'Return') { Invoke-Search } })
 
 $window.Add_Loaded({

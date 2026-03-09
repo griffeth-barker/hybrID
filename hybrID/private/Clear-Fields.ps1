@@ -5,5 +5,6 @@ function Clear-Fields {
     $txtManageExchange.Text = ""
     $txtSoaState.Text = "N/A"
     $btnTransferSoa.Visibility = "Collapsed"
+    $btnTransferGroupSoa.Visibility = "Collapsed"
     $valNotes.Text = ""
 }
