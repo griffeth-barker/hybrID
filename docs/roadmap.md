@@ -13,7 +13,7 @@ This document outlines the potential features, enhancements, and architectural g
 ## Short-Term Enhancements
 These are quick-win features designed to immediately improve the day-to-day quality of life for helpdesk technicians.
 - [ ] **"Copy to Clipboard" Button:** Add a quick-copy button that formats the search results into a clean text block, making it easy to paste into a ticketing system (e.g., ServiceNow, Jira).
-- [ ] **Expanded Object Support:** Improve handling for Shared Mailboxes, Equipment/Room Mailboxes, and Microsoft 365 Groups.
+- [x] **Expanded Object Support:** Improve handling for Shared Mailboxes, Equipment/Room Mailboxes, and Microsoft 365 Groups.
 - [x] **Graceful Error Logging:** Implement a hidden `logs\` directory that silently records Graph API timeouts or Active Directory connection failures for easier debugging.
 
 ## Medium-Term Goals

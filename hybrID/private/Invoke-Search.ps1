@@ -13,11 +13,16 @@ function Invoke-Search {
     $adObject = $null
     $mgObject = $null
     $upnToSearchInGraph = $identity 
+    $recipientTypeDetails = [int64]0
 
     try {
-        $adObject = Get-ADObject -Filter {sAMAccountName -eq $identity -or ObjectGUID -eq $identity -or UserPrincipalName -eq $identity} -Properties targetAddress, msExchHomeServerName, mail, groupType, UserPrincipalName -ErrorAction Stop | Select-Object -First 1
+        $adObject = Get-ADObject -Filter {sAMAccountName -eq $identity -or ObjectGUID -eq $identity -or UserPrincipalName -eq $identity} -Properties targetAddress, msExchHomeServerName, mail, groupType, UserPrincipalName, msExchRecipientTypeDetails -ErrorAction Stop | Select-Object -First 1
         if ($adObject -and $adObject.UserPrincipalName) { 
             $upnToSearchInGraph = $adObject.UserPrincipalName 
+        }
+
+        if ($adObject -and $adObject.msExchRecipientTypeDetails) {
+            [int64]::TryParse([string]$adObject.msExchRecipientTypeDetails, [ref]$recipientTypeDetails) | Out-Null
         }
     } catch {
         Write-HybrIDLog -Source "Invoke-Search.AD" -Message "Active Directory lookup failed." -Exception $_.Exception -Context @{ Identity = $identity }
@@ -66,12 +71,30 @@ function Invoke-Search {
         Set-Link -TextBlock $txtManageIdentity -Text "On-Premises Active Directory" -Url $null
 
         if ($adObject.ObjectClass -eq "user") {
-            if ($adObject.targetAddress -like "*@*.mail.onmicrosoft.com") {
+            $mailboxProfile = Resolve-MailboxProfile -RecipientTypeDetails $recipientTypeDetails -TargetAddress $adObject.targetAddress -HomeServerName $adObject.msExchHomeServerName
+
+            if ($mailboxProfile.HasMailbox -and $mailboxProfile.IsRemote) {
                 Set-Link -TextBlock $txtManageExchange -Text "Exchange Server ECP" -Url $onPremExchUrl
-                $valNotes.Text = "Mailbox is in EXO, but managed as a Remote Mailbox via On-Premises Exchange."
-            } elseif ($adObject.msExchHomeServerName) {
+                if ($mailboxProfile.MailboxType -eq "Shared") {
+                    $valNotes.Text = "Shared mailbox is in EXO, managed as a Remote Mailbox via On-Premises Exchange."
+                } elseif ($mailboxProfile.MailboxType -eq "Room") {
+                    $valNotes.Text = "Room mailbox is in EXO, managed as a Remote Mailbox via On-Premises Exchange."
+                } elseif ($mailboxProfile.MailboxType -eq "Equipment") {
+                    $valNotes.Text = "Equipment mailbox is in EXO, managed as a Remote Mailbox via On-Premises Exchange."
+                } else {
+                    $valNotes.Text = "User mailbox is in EXO, but managed as a Remote Mailbox via On-Premises Exchange."
+                }
+            } elseif ($mailboxProfile.HasMailbox) {
                 Set-Link -TextBlock $txtManageExchange -Text "Exchange Server ECP" -Url $onPremExchUrl
-                $valNotes.Text = "Mailbox resides entirely on-premises."
+                if ($mailboxProfile.MailboxType -eq "Shared") {
+                    $valNotes.Text = "Shared mailbox resides on-premises."
+                } elseif ($mailboxProfile.MailboxType -eq "Room") {
+                    $valNotes.Text = "Room mailbox resides on-premises."
+                } elseif ($mailboxProfile.MailboxType -eq "Equipment") {
+                    $valNotes.Text = "Equipment mailbox resides on-premises."
+                } else {
+                    $valNotes.Text = "Mailbox resides entirely on-premises."
+                }
             } else {
                 Set-Link -TextBlock $txtManageExchange -Text "No mailbox detected" -Url $null
             }
@@ -79,14 +102,19 @@ function Invoke-Search {
         elseif ($adObject.ObjectClass -eq "group") {
             if ($adObject.mail) {
                 Set-Link -TextBlock $txtManageExchange -Text "Exchange Server ECP" -Url $onPremExchUrl
-                $valNotes.Text = "Mail-enabled group. Manage exchange properties via On-Prem ECP."
+                $valNotes.Text = "Mail-enabled group (distribution or security). Manage exchange properties via On-Prem ECP."
             } else {
                 Set-Link -TextBlock $txtManageExchange -Text "N/A" -Url $null
+                $valNotes.Text = "Security group without mail attributes."
             }
         }
 
         if ($mgObject) {
-            $valNotes.Text += "`n`nSync Status: Synced to Entra ID."
+            if (-not [string]::IsNullOrWhiteSpace($valNotes.Text)) {
+                $valNotes.Text += "`n`nSync Status: Synced to Entra ID."
+            } else {
+                $valNotes.Text = "Sync Status: Synced to Entra ID."
+            }
             Set-Link -TextBlock $txtManageIdentity -Text "Active Directory" -Url $null
         }
 
@@ -129,19 +157,45 @@ function Invoke-Search {
     } elseif ($mgObject) {
         Set-Status "Object located in Entra ID." "#16825D"
         $valName.Text = $mgObject.DisplayName
-        
+
         if ($mgObject.AdditionalProperties["@odata.type"] -like "*user*") {
             $valClass.Text = "Cloud User"
+            Set-Link -TextBlock $txtManageIdentity -Text "Entra ID" -Url $entraUrl
+            Set-Link -TextBlock $txtManageExchange -Text "Exchange Online" -Url $exoUrl
+            $valNotes.Text = "Cloud mailbox object. If mailbox type is Shared/Room/Equipment, manage mailbox properties in Exchange Online."
         } else {
-            $valClass.Text = "Cloud Group"
+            $isUnifiedGroup = $false
+            if ($mgObject.GroupTypes -and ($mgObject.GroupTypes -contains "Unified")) {
+                $isUnifiedGroup = $true
+            }
+
+            $isMailEnabled = [bool]$mgObject.MailEnabled
+            $isSecurityEnabled = [bool]$mgObject.SecurityEnabled
+
+            if ($isUnifiedGroup) {
+                $valClass.Text = "Microsoft 365 Group"
+                $valNotes.Text = "Cloud Microsoft 365 Group. Manage identity in Entra and collaboration/mail settings in Exchange Online."
+            } elseif ($isMailEnabled -and $isSecurityEnabled) {
+                $valClass.Text = "Mail-enabled Security Group"
+                $valNotes.Text = "Cloud mail-enabled security group. Manage identity in Entra and mail settings in Exchange Online."
+            } elseif ($isMailEnabled) {
+                $valClass.Text = "Distribution Group"
+                $valNotes.Text = "Cloud distribution group. Manage membership and mail settings in Exchange Online."
+            } else {
+                $valClass.Text = "Security Group"
+                $valNotes.Text = "Cloud security group without mailbox."
+            }
+
+            Set-Link -TextBlock $txtManageIdentity -Text "Entra ID" -Url $entraUrl
+            if ($isMailEnabled -or $isUnifiedGroup) {
+                Set-Link -TextBlock $txtManageExchange -Text "Exchange Online" -Url $exoUrl
+            } else {
+                Set-Link -TextBlock $txtManageExchange -Text "N/A" -Url $null
+            }
         }
-        
-        Set-Link -TextBlock $txtManageIdentity -Text "Entra ID" -Url $entraUrl
-        Set-Link -TextBlock $txtManageExchange -Text "Exchange Online" -Url $exoUrl
+
         $txtSoaState.Text = "N/A"
         $btnTransferSoa.Visibility = "Collapsed"
-        
-        $valNotes.Text = "This object does not exist in Active Directory. Manage it entirely in M365/Entra ID."
     } else {
         Set-Status "Object not found in Active Directory or Entra ID." "#D03E3D"
         $txtSoaState.Text = "N/A"
