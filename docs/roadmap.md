@@ -17,6 +17,7 @@ This document outlines the potential features, enhancements, and architectural g
 - [ ] **User Interface Improvements:** Improve UI to accommodate future feature additions.
 
 ## Backlog
+- [ ] **Entra Connect Sync Status**: Display timestamp and type of last Entra Connect Sync cycle.  
 - [ ] **Bulk Search Capabilities:** Add a method of bulk searching.
 - [ ] **Mailbox License Visibility (Lightweight):** Display the assigned license that provides the user's mailbox.
 - [ ] **Export Object State:** Add export to JSON for complete object state.
