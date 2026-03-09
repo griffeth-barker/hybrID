@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+  - CI workflow using GitHub Actions for lint and test validation.
+  - Initial Pester test suite for source parsing and project conventions.
+  - New documentation pages:
+    - `docs/architecture.md`
+    - `docs/ci.md`
+    - `docs/troubleshooting.md`
+
+### Changed
+  - Updated contributor and build/release docs to include local test/lint and CI guidance.
+
 
 ## [0.1.1] - 2026-03-06
 
@@ -24,8 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Seamless Restart Mechanism:** Hidden background process launcher using the `WScript.Shell` COM object to gracefully restart the application when theme changes are applied.
   - **Custom Themed Alerts:** Replaced legacy Windows Forms `MessageBox` popups with completely custom, dynamically themed WPF dialog windows for "Success" and "Restart Required" alerts.
   - **UI/UX Polish:** Using native Windows Segoe MDL2 Assets for crisp vector icons, rounded corners (`CornerRadius`), and interactive hover states across all custom controls (TextBoxes, ComboBoxes, Buttons).
-  - **Documentation:** Created standard docs including `README.md`, `CONTRIBUTING.md`, and `docs/Architecture.md`.
+  - **Documentation:** Created standard docs including `README.md`, `CONTRIBUTING.md`, and architecture documentation.
 
-[unreleased]:  
+[unreleased]: https://github.com/griffeth-barker/hybrID/compare/v0.1.1...main
 [0.1.1]: https://github.com/griffeth-barker/hybrID/releases/tag/v0.1.1  
 [0.1.0]: https://github.com/griffeth-barker/hybrID/releases/tag/v0.1.0  

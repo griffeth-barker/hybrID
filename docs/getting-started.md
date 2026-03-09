@@ -1,42 +1,69 @@
 # Getting Started
-**hybrID** is a tool designed to tell you where an identity (user or group) lives and which portal you need to use to manage it.
+
+**hybrID** helps you quickly determine where an identity object should be managed in a hybrid Microsoft environment.
 
 ## Launching the App
-1.  Launch Windows PowerShell.
-2.  Set your present working directory to the module root directory.
-3.  Execute `hybrID.ps1` from your terminal.
-4.  On first launch, you may be prompted to authenticate with Microsoft Graph. Sign in with your administrative credentials.
+
+1. Launch **Windows PowerShell 5.1**.
+2. Change directory to the repository root.
+3. Run:
+	- `./hybrID/public/hybrID.ps1`
+4. On first launch, sign in to Microsoft Graph if prompted.
 
 ![](/assets/screenshot-main-ui.png)
 
+## Search Inputs
 
-## Searching for an Object
-You can search using any of the following formats:
-* **sAMAccountName:** (e.g., `jsmith`)
-* **UserPrincipalName (UPN):** (e.g., `jsmith@domain.com`)
-* **ObjectGUID:** (e.g., `12345678-1234-5678-1234-567812345678`)
+Enter one of the following:
 
-Type the identity into the search bar and click **Locate**.
+- **sAMAccountName** (for example: `jsmith`)
+- **UserPrincipalName (UPN)** (for example: `jsmith@domain.com`)
+- **ObjectGUID** (for example: `12345678-1234-5678-1234-567812345678`)
 
-## Interpreting the Results
-The app splits management into two distinct categories: **Identity** (name, password, group membership) and **Exchange** (email addresses, aliases, mailbox features).
+Select **Locate** to run the lookup.
+
+## Understanding the Main Window
+
+The main window is organized to keep on-prem and cloud context visible at the same time:
+
+- **Left column:** On-premises context (Active Directory + Exchange Server)
+- **Middle column:** Control actions and notes (including SOA state/actions)
+- **Right column:** Cloud context (Entra ID + Exchange Online)
 
 ![](/assets/screenshot-main-ui-with-search.png)
 
-### Scenario A: Fully On-Premises
-* **Manage Identity In:** `Active Directory` (Gray Text)
-* **Manage Exchange In:** `On-Premises Exchange` (Blue Link)
-* **Action:** Click the blue link to open the On-Premises ECP. Use Active Directory Users & Computers (ADUC) to reset passwords or change names.
+## Common Result Patterns
 
-### Scenario B: Hybrid / Synced (Most Common)
-* **Manage Identity In:** `Active Directory` (Gray Text)
-* **Manage Exchange In:** `On-Premises Exchange` (Blue Link)
-* **Action:** Because the user syncs to the cloud, you **must** manage their proxy addresses and email aliases from the On-Premises ECP link provided. Do not attempt to change email aliases directly in M365, as the sync will overwrite them.
+### On-Premises Object
 
-### Scenario C: Cloud-Only
-* **Manage Identity In:** `Entra ID` (Blue Link)
-* **Manage Exchange In:** `Exchange Online` (Blue Link)
-* **Action:** This object does not exist in our local Active Directory. Click the links to manage them entirely within the Microsoft 365 web portals.
+- Identity is managed on-prem.
+- Exchange management appears as On-Premises Exchange (if mail-enabled).
 
-## Using the Deep Links
-Whenever a field appears as blue, underlined text, it is a direct link to that specific user or group's profile. Clicking it will automatically open a new browser window directly to that object's management page.
+### Synced / Hybrid Object
+
+- Identity is synchronized between AD and Entra ID.
+- Exchange management path depends on mailbox/group state.
+- SOA state is shown in the middle column where applicable.
+
+### Cloud-Only Object
+
+- Identity management points to Entra ID.
+- Exchange management points to Exchange Online when mail-enabled.
+
+## Source of Authority (SOA) Actions
+
+When the current object supports SOA transfer:
+
+- A transfer button appears in the middle column.
+- Button text updates to reflect direction (transfer vs revert).
+- The current SOA state is displayed above the action.
+
+## Deep Links
+
+Blue, underlined values open the specific object management destination in a browser window. Link generation is driven by templates in `hybrID/config/config.json`.
+
+## Next Steps
+
+- See `docs/screenshots.md` for UI examples.
+- See `docs/troubleshooting.md` for common issues.
+- See `docs/contributing.md` for development standards.

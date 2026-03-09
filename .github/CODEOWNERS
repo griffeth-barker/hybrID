@@ -1,0 +1,10 @@
+# Default owner for all files
+* @griffeth-barker
+
+# Docs and process
+/docs/ @griffeth-barker
+/.github/ @griffeth-barker
+
+# Core app
+/hybrID/ @griffeth-barker
+/build/ @griffeth-barker

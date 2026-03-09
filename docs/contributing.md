@@ -1,93 +1,159 @@
 # Contributing to hybrID
-First off, thank you for considering contributing to hybrID! This tool is designed to make hybrid identity management frictionless, and community contributions are what keep it sharp.
 
-This document outlines the architecture, coding standards, and workflow for contributing to the project.
+Thanks for contributing to **hybrID**. This project helps IT professionals triage and route hybrid identity objects across Active Directory, Microsoft Entra ID, Exchange Server, and Exchange Online.
 
-## Project Architecture
+This guide defines architecture boundaries, coding standards, and pull request expectations.
 
-hybrID is built using a modular Model-View-Controller (MVC) approach. We strictly separate UI markup, application logic, and configuration state to make the codebase maintainable and scalable.
+## Project Principles
+
+- Keep the app fast and dependable for helpdesk workflows.
+- Prefer safe, reversible operations over destructive changes.
+- Preserve clear on-prem vs cloud routing behavior.
+- Optimize for readability and maintainability over cleverness.
+
+## Architecture (Must Follow)
+
+hybrID uses a modular MVC-like structure:
 
 ```text
 hybrID/
-├── assets/              # GitHub repository assets (readmes, badges)
-├── build/               # Build scripts (e.g., PS2EXE wrappers)
 ├── docs/                # Project documentation
-├── hybrID/              # Core Application Directory
-│   ├── assets/          # Static app resources (icons, images)
-│   ├── config/          # Application state (config.json)
-│   ├── private/         # Internal PowerShell logic & helper functions
-│   ├── public/          # Main controller script (hybrID.ps1)
-│   └── ui/              # XAML presentation layer files
-├── tests/               # Pester tests
-├── .gitignore
-└── README.md
+├── hybrID/
+│   ├── assets/          # App icons/images
+│   ├── config/          # Persistent app state (config.json)
+│   ├── private/         # Feature functions (one focused function per file)
+│   ├── public/          # Bootstrap/composition entrypoint (hybrID.ps1)
+│   └── ui/              # XAML UI definitions
+└── tests/               # Pester tests (as coverage grows)
 ```
 
-### Component Breakdown
-#### `public/hybrID.ps1`  
-The main controller. It initializes the environment, loads the global variables, dynamically imports the UI, and binds the events.
+### Responsibilities by Layer
 
-#### `private/*.ps1`  
-The brains of the operation. Each distinct feature (e.g., Invoke-Search.ps1, Show-Settings.ps1) lives in its own file here.
+- `public/hybrID.ps1`
+  - Bootstrap only: load config/XAML, import private scripts, bind events, initialize globals.
+  - Do **not** place business logic here.
 
-#### `ui/*.xaml`  
-The presentation layer. All UI layout must be done in these files, never hardcoded as strings inside PowerShell scripts.
+- `private/*.ps1`
+  - Business logic and integrations (AD, Graph, Exchange routing, SOA, etc.).
+  - Keep functions focused and reusable.
+  - Prefer one feature per file.
 
-#### `config/config.json`  
-The persistent state file that holds user preferences (themes, FQDNs).
+- `ui/*.xaml`
+  - All layout and visual structure.
+  - Do not generate UI markup in PowerShell.
 
-## Design & Theming Standards
-hybrID features a dynamic theming engine (Dark, Light, and System). If you are adding new UI elements or windows, you must adhere to the following UI standards:
+- `config/config.json`
+  - User-editable configuration only.
+  - New settings must include safe defaults.
 
-  - **No Hardcoded Hex Colors**: Never use hardcoded colors (e.g., Background="#1E1E1E") in the XAML. You must use the application's global DynamicResource tokens:
-    - `{DynamicResource WindowBg}`: Base background for windows.
-    - `{DynamicResource PanelBg}`: Elevated background for inner panels or popups.
-    - `{DynamicResource InputBg}`: Background for TextBoxes and ComboBoxes.
-    - `{DynamicResource BorderBrush}`: Borders and dividers.
-    - `{DynamicResource PrimaryText}`: Main reading text.
-    - `{DynamicResource SecondaryText}`: Labels and subtitles.
-    - `{DynamicResource NotesText}`: Specifically for the AD Notes field.
+## PowerShell and Runtime Standards
 
-  - **Rounded Corners**: Modern Windows UI standards apply. 
-    - Use `<Border CornerRadius="6">` for buttons and input fields
-    - Use `CornerRadius="8"` for larger panels.
+- Target **Windows PowerShell 5.1** compatibility.
+- Avoid PowerShell 7+ only syntax/features.
+- Use approved module patterns already present in the project.
+- Keep cmdlets explicit and readable.
 
-  - **Icons**: Use the native Windows **Segoe MDL2 Assets** font for icons instead of emojis or external images. (e.g., `&#xE713;` for the Settings gear).
-  - **Window Icons (Popups & Child Windows)**: Child windows spawned by the main window should always inherit its application icon in the Title Bar:
-   ```powershell
-   if ($global:MainWindow.Icon) {
-       $TargetWindow.Icon = $global:MainWindow.Icon
-   }
-   ```
+## State and Scope Rules
 
-## Coding Standards
-  - **PowerShell Version**: Code must be compatible with Windows PowerShell 5.1 (the default on most admin workstations).
+- Use `$global:` only for cross-file shared state (for example, `$global:Config`, `$global:uiDir`, brush globals, current search context).
+- Keep temporary and per-call values local.
+- If new shared state is required, initialize it in `public/hybrID.ps1`.
 
-  - Variable Scope:
+## UI and Theming Standards
 
-    - Use `$global:` for configuration arrays (`$global:Config`), directory paths (`$global:uiDir`), or brushes that must be accessed across multiple separated .ps1 files.
+hybrID supports dynamic themes (Dark, Light, System). New UI must respect theme resources.
 
-    - Use standard scoping (`$variable`) for temporary data within functions.
+- Do not hardcode colors in XAML where a theme token exists.
+- Use these existing resources where applicable:
+  - `{DynamicResource WindowBg}`
+  - `{DynamicResource PanelBg}`
+  - `{DynamicResource InputBg}`
+  - `{DynamicResource BorderBrush}`
+  - `{DynamicResource PrimaryText}`
+  - `{DynamicResource SecondaryText}`
+  - `{DynamicResource NotesText}`
+- Keep controls visually consistent (corner radius, spacing, typography).
+- Use `Set-Link` for management hyperlinks so link styling/behavior remains centralized.
+- New child windows/dialogs should inherit the main app icon and be themed via `Apply-Theme`.
 
-  - **Separation of Concerns**: Do not put business logic inside hybrID.ps1. Write a helper function in the private folder and bind it in the controller.
+## Error Handling and Logging
 
-  - **Error Handling**: Use try/catch blocks for external API calls (Microsoft Graph, Active Directory) and provide clean, themed XAML popups for errors rather than writing to the console or using legacy WinForms Message Boxes.
+- Wrap external operations (AD, Graph, Exchange, browser/URL actions) in `try/catch`.
+- Provide user-facing status updates with `Set-Status`.
+- Log failures using `Write-HybrIDLog` with helpful context.
+- Avoid raw console output for user-facing diagnostics.
 
-## Development Workflow
-  1. Fork the repository and clone it to your local machine.
-  2. Create a feature branch (git checkout -b feature/Add-Export-Button).
-  3. Make your changes within the hybrID/ directory structure.
-  4. Run the application by executing hybrID/public/hybrID.ps1 in your terminal. Ensure the app launches cleanly from the terminal and that your feature respects both Dark and Light themes.
-     > There currently is not a test harness, but that may be an eventual addition.
-  5. Commit your changes with clean, descriptive commit messages.
-  6. Push to your fork and submit a PR to the main branch.
+## Feature Change Patterns
 
 ### Adding a New Setting
-If you are adding a new user-configurable setting:
 
-  1. Add the default key/value pair to `config/config.json`.
-  2. Update the `ui/settings.xaml` grid to include the new label and input control.
-  3. Update the `Show-Settings.ps1` script to map the control, populate it on load, and save it to `$global:Config` on apply.
+1. Add a default value in `config/config.json`.
+2. Add/update controls in `ui/settings.xaml`.
+3. Wire load/save behavior in `private/Show-Settings.ps1`.
+
+### Adding a New Feature Function
+
+1. Add a new focused file in `private/`.
+2. Reuse existing shared utilities when possible (`Set-Status`, `Set-Link`, `Write-HybrIDLog`, `Apply-Theme`).
+3. Bind UI events in `public/hybrID.ps1` only.
+4. Keep search/routing semantics in sync with `Invoke-Search` behavior.
+
+## Development Workflow
+
+1. Fork and clone.
+2. Create a feature branch (for example, `feature/add-export-json`).
+3. Implement changes within the established folder boundaries.
+4. Run the app locally from repo root:
+   - `./hybrID/public/hybrID.ps1`
+5. Validate core flows manually:
+   - Search (AD-only, cloud-only, synced)
+   - Settings and About windows
+   - Theme behavior
+   - SOA actions (if affected)
+6. Add or update Pester tests when practical.
+7. Submit a PR with clear scope and validation notes.
+
+## Local Test & Lint Commands
+
+From repository root in Windows PowerShell:
+
+1. Run Pester tests:
+  - `Invoke-Pester -Path .\tests -Verbose`
+2. Run script analysis (error severity baseline):
+  - `Invoke-ScriptAnalyzer -Path .\hybrID -Recurse -Settings .\.psscriptanalyzer.psd1`
+
+If you do not have required modules installed locally:
+
+- `Install-Module Pester -Scope CurrentUser`
+- `Install-Module PSScriptAnalyzer -Scope CurrentUser`
+
+## Continuous Integration (CI)
+
+GitHub Actions runs CI on pushes and pull requests targeting `main`.
+
+Current CI checks:
+
+- PowerShell static analysis using PSScriptAnalyzer
+- Pester tests in `tests/`
+
+Contributors should treat CI failures as blockers and resolve them before merge.
+
+## Pull Request Checklist
+
+Before opening a PR, verify:
+
+- [ ] Feature logic is in `private/`, not `public/hybrID.ps1`.
+- [ ] XAML uses theme resources consistently.
+- [ ] External calls are guarded with `try/catch` and logged when needed.
+- [ ] New settings are wired end-to-end (config + UI + load/save).
+- [ ] No unnecessary global variables were introduced.
+- [ ] Manual validation steps are included in the PR description.
+- [ ] CI checks are passing.
 
 ## Need Help?
-If you are unsure about the architecture or how to implement a specific feature, feel free to open a Draft PR or an Issue to discuss it!
+
+If you're unsure about architecture, open a draft PR or an issue and include:
+
+- the scenario you're solving,
+- expected object behavior (on-prem/cloud/synced), and
+- any API/module assumptions.
