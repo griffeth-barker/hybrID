@@ -28,12 +28,37 @@ public enum SyncState
     CloudOnly,
 }
 
+/// <summary>Where (and how) the object's mailbox is managed - drives the mailbox verdict card.</summary>
+public enum MailboxLocation
+{
+    None,
+    NotApplicable,
+    OnPremMailbox,
+    RemoteMailbox,
+    OnPremMailEnabledGroup,
+    ExchangeOnline,
+}
+
+public enum ObjectKind
+{
+    User,
+    Group,
+    Other,
+}
+
+public enum CandidateSource
+{
+    ActiveDirectory,
+    EntraId,
+}
+
 /// <summary>One candidate in an ambiguous (multiple-match) result, re-searchable by Identity.</summary>
 public sealed class AmbiguousCandidate
 {
     public required string DisplayName { get; init; }
     public required string Detail { get; init; }
     public required string Identity { get; init; }
+    public CandidateSource? Source { get; init; }
 }
 
 public sealed class IdentityLookupResult
@@ -57,6 +82,21 @@ public sealed class IdentityLookupResult
     public IReadOnlyList<string> Licenses { get; init; } = Array.Empty<string>();
     public string? GroupTypeDescription { get; init; }
     public int? MemberCount { get; init; }
+
+    // Display-only additions (docs/design/ui-spec.md section 11 [M1]); routing doesn't read these.
+    public MailboxLocation? MailboxLocation { get; init; }
+    public ObjectKind? ObjectKind { get; init; }
+    public string? SamAccountName { get; init; }
+    public string? UserPrincipalName { get; init; }
+    public string? Mail { get; init; }
+    public Guid? ObjectGuid { get; init; }
+    public string? DistinguishedName { get; init; }
+    public string? TargetAddress { get; init; }
+    public string? EntraObjectId { get; init; }
+    public bool? EntraSyncEnabled { get; init; }
+
+    /// <summary>Read-only "View in ..." links for systems that mirror, but don't manage, the object.</summary>
+    public IReadOnlyList<ManagementLink> ViewLinks { get; init; } = Array.Empty<ManagementLink>();
 
     /// <summary>Non-null and populated only when the search matched more than one object.</summary>
     public IReadOnlyList<AmbiguousCandidate>? Candidates { get; init; }

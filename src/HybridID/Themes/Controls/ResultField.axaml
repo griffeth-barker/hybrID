@@ -35,6 +35,7 @@
                           IsVisible="False"/>
                 <SelectableTextBlock x:Name="PART_Value" Grid.Column="1"
                                      Classes="body"
+                                     Classes.mono="{TemplateBinding IsMonospace}"
                                      Text="{TemplateBinding Value}"
                                      TextWrapping="Wrap"
                                      Foreground="{TemplateBinding Foreground}"/>
@@ -58,11 +59,8 @@
     <Style Selector="^:pointerover /template/ Border#PART_Root">
       <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
     </Style>
-    <Style Selector="^:mono /template/ SelectableTextBlock#PART_Value">
-      <Setter Property="FontFamily" Value="{DynamicResource FontFamilyMono}"/>
-      <Setter Property="FontSize" Value="13"/>
-      <Setter Property="LineHeight" Value="20"/>
-    </Style>
+    <!-- Monospace comes from the Typography ".mono" class on PART_Value (bound to IsMonospace):
+         app-level ".body" Styles outrank ControlTheme setters, so a ":mono" setter here loses. -->
     <Style Selector="^:empty">
       <Style Selector="^ /template/ SelectableTextBlock#PART_Value">
         <Setter Property="IsVisible" Value="False"/>

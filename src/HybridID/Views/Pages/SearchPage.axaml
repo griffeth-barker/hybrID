@@ -1,22 +1,333 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="using:HybridID.Controls"
+             xmlns:p="using:HybridID.Views.Pages"
              x:Class="HybridID.Views.Pages.SearchPage">
-  <!-- PLACEHOLDER (Phase 1/2): replaced by the full page in a later phase. -->
-  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-    <StackPanel Margin="{DynamicResource PagePadding}"
-                MaxWidth="1200"
-                HorizontalAlignment="Stretch"
-                Spacing="8">
-      <TextBlock Classes="title" Text="Search" AutomationProperties.HeadingLevel="1"/>
-      <TextBlock Classes="body secondary" TextWrapping="Wrap"
-                 Text="The search page is being implemented (spec section 5.1, Phase 4)."/>
-        <TextBox x:Name="TxtSearch"
-                 Height="40"
-                 MaxWidth="640"
-                 HorizontalAlignment="Stretch"
-                 VerticalContentAlignment="Center"
-                 PlaceholderText="Search by sAMAccountName, UPN, or ObjectGUID"
-                 AutomationProperties.Name="Identity to search"/>
-    </StackPanel>
-  </ScrollViewer>
+  <!-- Search page, docs/design/ui-spec.md section 5.1. Exactly one of the five *State panels is
+       visible (SetState in code-behind). Colors come from classes below, never from code. -->
+  <UserControl.Styles>
+    <!-- Status-colored icons (coverage line, account row, hint line). -->
+    <Style Selector="PathIcon.success"><Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/></Style>
+    <Style Selector="PathIcon.caution"><Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}"/></Style>
+    <Style Selector="PathIcon.critical"><Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}"/></Style>
+    <Style Selector="PathIcon.secondary"><Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/></Style>
+    <Style Selector="PathIcon.tertiary"><Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}"/></Style>
+
+    <!-- Location-tinted badges: result avatar (48, round) and candidate badge (36, square). -->
+    <Style Selector="Border.badge">
+      <Setter Property="Background" Value="{DynamicResource SystemFillColorNeutralBackgroundBrush}"/>
+    </Style>
+    <Style Selector="Border.badge > PathIcon">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+    </Style>
+    <Style Selector="Border.badge.onprem"><Setter Property="Background" Value="{DynamicResource LocationOnPremBackgroundBrush}"/></Style>
+    <Style Selector="Border.badge.onprem > PathIcon"><Setter Property="Foreground" Value="{DynamicResource LocationOnPremForegroundBrush}"/></Style>
+    <Style Selector="Border.badge.hybrid"><Setter Property="Background" Value="{DynamicResource LocationHybridBackgroundBrush}"/></Style>
+    <Style Selector="Border.badge.hybrid > PathIcon"><Setter Property="Foreground" Value="{DynamicResource LocationHybridForegroundBrush}"/></Style>
+    <Style Selector="Border.badge.cloud"><Setter Property="Background" Value="{DynamicResource LocationCloudBackgroundBrush}"/></Style>
+    <Style Selector="Border.badge.cloud > PathIcon"><Setter Property="Foreground" Value="{DynamicResource LocationCloudForegroundBrush}"/></Style>
+
+    <!-- Results entrance (5.1.5): code sets start values, then end values staggered. -->
+    <Style Selector=":is(Control).reveal">
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+          <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+        </Transitions>
+      </Setter>
+    </Style>
+
+    <Style Selector="TextBox#TxtSearch">
+      <Setter Property="FontSize" Value="14"/>
+    </Style>
+  </UserControl.Styles>
+
+  <Grid RowDefinitions="Auto,Auto,*">
+    <!-- ============================================================ Header -->
+    <Border Grid.Row="0" Padding="32,24,32,16">
+      <StackPanel MaxWidth="1200" AutomationProperties.LandmarkType="Search">
+        <Grid ColumnDefinitions="*,8,Auto">
+          <TextBox x:Name="TxtSearch"
+                   Height="40"
+                   VerticalContentAlignment="Center"
+                   PlaceholderText="Search by sAMAccountName, UPN, or ObjectGUID"
+                   MaxLength="256"
+                   AutomationProperties.Name="Identity to search">
+            <TextBox.InnerLeftContent>
+              <PathIcon Data="{StaticResource Icon.Search16}" Width="16" Height="16" Margin="12,0,4,0" Classes="secondary"/>
+            </TextBox.InnerLeftContent>
+            <TextBox.InnerRightContent>
+              <Button x:Name="BtnClear" Classes="subtle icon" Width="32" Height="32" Margin="0,0,4,0"
+                      Focusable="False" IsVisible="False"
+                      ToolTip.Tip="Clear (Esc)" AutomationProperties.Name="Clear search">
+                <PathIcon Data="{StaticResource Icon.Dismiss12}" Width="12" Height="12"/>
+              </Button>
+            </TextBox.InnerRightContent>
+          </TextBox>
+          <Button x:Name="BtnLocate" Grid.Column="2" Classes="accent" Height="40" MinWidth="112"
+                  HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                  ToolTip.Tip="Locate (Enter)">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <c:ProgressRing x:Name="LocateRing" Width="16" Height="16" IsVisible="False" IsActive="False"/>
+              <TextBlock x:Name="LocateText" Text="Locate" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+        </Grid>
+        <Grid ColumnDefinitions="Auto,*" Margin="0,8,0,0">
+          <PathIcon x:Name="HintIcon" Data="{StaticResource Icon.Error}" Width="12" Height="12"
+                    Margin="0,0,4,0" Classes="critical" IsVisible="False"/>
+          <TextBlock x:Name="HintText" Grid.Column="1" Classes="caption secondary" TextWrapping="Wrap"/>
+        </Grid>
+      </StackPanel>
+    </Border>
+
+    <ProgressBar x:Name="SearchProgress" Grid.Row="1" IsIndeterminate="True" Height="3" MinHeight="3"
+                 CornerRadius="0" IsVisible="False"/>
+
+    <!-- ============================================================ Body -->
+    <ScrollViewer x:Name="BodyScroller" Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel x:Name="BodyPanel" MaxWidth="1264" Margin="32,0,32,32" Spacing="16">
+
+        <!-- Page-level InfoBars, 5.1.6 order: preview, setup, coverage issues, errors. -->
+        <StackPanel x:Name="InfoBarStack" Spacing="8">
+          <c:InfoBar x:Name="PreviewBar" Severity="Informational" IsOpen="False" IsClosable="True"
+                     Title="Preview mode"/>
+          <c:InfoBar x:Name="SetupBar" Severity="Warning" IsOpen="False" IsClosable="True"
+                     Title="Finish setting up hybrID">
+            <c:InfoBar.ActionContent>
+              <Button x:Name="BtnSetupSettings" Content="Open settings"/>
+            </c:InfoBar.ActionContent>
+          </c:InfoBar>
+          <c:InfoBar x:Name="AdUnreachableBar" Severity="Warning" IsOpen="False" IsClosable="True"
+                     Title="Active Directory wasn't searched">
+            <c:InfoBar.ActionContent>
+              <Button x:Name="BtnAdRetry" Content="Retry"/>
+            </c:InfoBar.ActionContent>
+          </c:InfoBar>
+          <c:InfoBar x:Name="AdSkippedBar" Severity="Warning" IsOpen="False" IsClosable="True"
+                     Title="Active Directory skipped for this session"
+                     Message="Results are based on Entra ID only — a synced object can look cloud-only.">
+            <c:InfoBar.ActionContent>
+              <Button x:Name="BtnAdSignIn" Content="Sign in"/>
+            </c:InfoBar.ActionContent>
+          </c:InfoBar>
+          <c:InfoBar x:Name="SyncHintBar" Severity="Warning" IsOpen="False" IsClosable="False"
+                     Title="Entra ID says this object is synced from on-premises AD"
+                     Message="Manage it in Active Directory, not in Entra ID. Sign in to Active Directory to see the full picture.">
+            <c:InfoBar.ActionContent>
+              <Button x:Name="BtnSyncHintSignIn" Content="Sign in"/>
+            </c:InfoBar.ActionContent>
+          </c:InfoBar>
+          <c:InfoBar x:Name="GraphSuspectBar" Severity="Warning" IsOpen="False" IsClosable="True"
+                     Title="Microsoft sign-in may not have finished"
+                     Message="Entra ID results may be missing. If you completed sign-in, search again.">
+            <c:InfoBar.ActionContent>
+              <Button x:Name="BtnGraphSuspectAgain" Content="Search again"/>
+            </c:InfoBar.ActionContent>
+          </c:InfoBar>
+          <c:InfoBar x:Name="GraphInitBar" Severity="Error" IsOpen="False" IsClosable="True"
+                     Title="Couldn't start Microsoft Graph sign-in">
+            <c:InfoBar.ActionContent>
+              <Button x:Name="BtnGraphInitSettings" Content="Open settings"/>
+            </c:InfoBar.ActionContent>
+          </c:InfoBar>
+        </StackPanel>
+
+        <!-- ======================================================== Idle (5.1.3) -->
+        <StackPanel x:Name="EmptyState" Margin="0,32,0,0" Spacing="0">
+          <Image Source="avares://HybridID/Assets/hybrid-icon.png" Width="64" Height="64"/>
+          <TextBlock Classes="title" Text="Find where an identity is managed" HorizontalAlignment="Center"
+                     TextAlignment="Center" TextWrapping="Wrap" Margin="0,16,0,8"
+                     AutomationProperties.HeadingLevel="1"/>
+          <TextBlock Classes="bodyLarge secondary" HorizontalAlignment="Center" TextAlignment="Center"
+                     TextWrapping="Wrap" MaxWidth="560"
+                     Text="Search Active Directory and Entra ID at once, then jump to the right admin portal."/>
+
+          <UniformGrid x:Name="FormatGrid" Columns="3" Margin="-6,32,-6,0">
+            <Border Classes="card" Margin="6">
+              <StackPanel Spacing="4">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <PathIcon Data="{StaticResource Icon.Person}" Width="16" Height="16" Classes="secondary"/>
+                  <TextBlock Classes="caption secondary" Text="sAMAccountName" VerticalAlignment="Center"/>
+                </StackPanel>
+                <TextBlock Classes="body mono" Text="jsmith" TextTrimming="CharacterEllipsis"/>
+              </StackPanel>
+            </Border>
+            <Border Classes="card" Margin="6">
+              <StackPanel Spacing="4">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <PathIcon Data="{StaticResource Icon.Mail}" Width="16" Height="16" Classes="secondary"/>
+                  <TextBlock Classes="caption secondary" Text="User principal name" VerticalAlignment="Center"/>
+                </StackPanel>
+                <TextBlock Classes="body mono" Text="jsmith@contoso.com" TextTrimming="CharacterEllipsis"/>
+              </StackPanel>
+            </Border>
+            <Border Classes="card" Margin="6">
+              <StackPanel Spacing="4">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <PathIcon Data="{StaticResource Icon.NumberSymbol16}" Width="16" Height="16" Classes="secondary"/>
+                  <TextBlock Classes="caption secondary" Text="ObjectGUID" VerticalAlignment="Center"/>
+                </StackPanel>
+                <TextBlock Classes="body mono" Text="3f2504e0-4f89-11d3-9a0c-0305e82c3301" TextTrimming="CharacterEllipsis"/>
+              </StackPanel>
+            </Border>
+          </UniformGrid>
+
+          <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,28,0,12">
+            <PathIcon Data="{StaticResource Icon.Keyboard20}" Width="16" Height="16" Classes="secondary"/>
+            <TextBlock Classes="bodyStrong" Text="Keyboard shortcuts" VerticalAlignment="Center"
+                       AutomationProperties.HeadingLevel="2"/>
+          </StackPanel>
+          <WrapPanel x:Name="ShortcutsPanel" ItemSpacing="24" LineSpacing="8"/>
+        </StackPanel>
+
+        <!-- ======================================================== Searching (5.1.4) -->
+        <StackPanel x:Name="SearchingState" IsVisible="False" Margin="0,64,0,0" Spacing="8"
+                    HorizontalAlignment="Center">
+          <c:ProgressRing x:Name="SearchingRing" Width="32" Height="32" IsActive="False" Margin="0,0,0,8"/>
+          <TextBlock x:Name="SearchingTitle" Classes="subtitle" HorizontalAlignment="Center"
+                     TextAlignment="Center" TextWrapping="Wrap"/>
+          <TextBlock x:Name="PhaseText" Classes="body secondary" HorizontalAlignment="Center"
+                     TextAlignment="Center" TextWrapping="Wrap"
+                     AutomationProperties.LiveSetting="Polite"/>
+        </StackPanel>
+
+        <!-- ======================================================== No result (5.1.8) -->
+        <StackPanel x:Name="NoResultState" IsVisible="False" Margin="0,48,0,0" Spacing="8"
+                    HorizontalAlignment="Center">
+          <PathIcon Data="{StaticResource Icon.Unknown20}" Width="48" Height="48" Classes="tertiary"
+                    Margin="0,0,0,8"/>
+          <TextBlock x:Name="NoResultTitle" Classes="subtitle" HorizontalAlignment="Center"
+                     TextAlignment="Center" TextWrapping="Wrap" AutomationProperties.HeadingLevel="1"/>
+          <WrapPanel x:Name="NoResultCoverage" HorizontalAlignment="Center"/>
+          <TextBlock Classes="body secondary" HorizontalAlignment="Center" TextAlignment="Center"
+                     TextWrapping="Wrap" Text="Check the spelling, or try the UPN or ObjectGUID instead."/>
+          <Button x:Name="BtnNoResultAgain" Content="Search again" HorizontalAlignment="Center"
+                  Margin="0,8,0,0"/>
+        </StackPanel>
+
+        <!-- ======================================================== Candidates (5.1.9) -->
+        <StackPanel x:Name="CandidatesState" IsVisible="False" Spacing="4">
+          <TextBlock x:Name="CandidatesTitle" Classes="subtitle" AutomationProperties.HeadingLevel="1"/>
+          <TextBlock Classes="body secondary" Text="Pick one to see where it's managed."/>
+          <WrapPanel x:Name="CandidatesCoverage" Margin="0,4,0,12"/>
+          <Border Classes="card" Padding="0" ClipToBounds="True">
+            <ListBox x:Name="CandidateList" Classes="candidates" SelectionMode="Single"
+                     AutomationProperties.Name="Matches">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="p:CandidateItem">
+                  <Grid ColumnDefinitions="Auto,12,*,Auto">
+                    <Border Classes="badge" Classes.onprem="{Binding IsActiveDirectory}"
+                            Classes.cloud="{Binding IsEntraId}"
+                            Width="36" Height="36" CornerRadius="4" VerticalAlignment="Center">
+                      <PathIcon Data="{Binding Icon}" Width="16" Height="16"/>
+                    </Border>
+                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="2">
+                      <TextBlock Classes="bodyStrong" Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis"/>
+                      <TextBlock Classes="caption secondary" Text="{Binding Detail}" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                    <PathIcon Grid.Column="3" Data="{StaticResource Icon.ChevronRight}" Width="16" Height="16"
+                              Classes="tertiary" VerticalAlignment="Center"/>
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </Border>
+        </StackPanel>
+
+        <!-- ======================================================== Result (5.1.5) -->
+        <StackPanel x:Name="ResultState" IsVisible="False" Spacing="16">
+          <!-- Result header (no card chrome). -->
+          <Grid x:Name="ResultHeader" Classes="reveal" ColumnDefinitions="Auto,16,*,Auto">
+            <Border x:Name="Avatar" Classes="badge" Width="48" Height="48" CornerRadius="24" VerticalAlignment="Top">
+              <PathIcon x:Name="AvatarIcon" Width="20" Height="20"/>
+            </Border>
+            <StackPanel Grid.Column="2" Spacing="0">
+              <SelectableTextBlock x:Name="ResultName" Classes="title" TextTrimming="CharacterEllipsis"
+                                   AutomationProperties.HeadingLevel="1"/>
+              <TextBlock x:Name="ResultSubline" Classes="body secondary" TextTrimming="CharacterEllipsis"/>
+              <WrapPanel x:Name="PillsPanel" ItemSpacing="8" LineSpacing="8" Margin="0,8,0,0"/>
+              <WrapPanel x:Name="ResultCoverage" Margin="0,8,0,0"/>
+            </StackPanel>
+            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4" VerticalAlignment="Top">
+              <Button x:Name="BtnCopySummary" AutomationProperties.Name="Copy summary">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <PathIcon Data="{StaticResource Icon.CopySummary}" Width="16" Height="16"/>
+                  <TextBlock x:Name="CopySummaryText" Text="Copy summary" VerticalAlignment="Center"/>
+                </StackPanel>
+              </Button>
+              <Button x:Name="BtnSearchAgain" Classes="subtle icon" Width="32" Height="32"
+                      AutomationProperties.Name="Search again (F5)">
+                <PathIcon Data="{StaticResource Icon.Refresh}" Width="16" Height="16"/>
+              </Button>
+            </StackPanel>
+          </Grid>
+
+          <!-- Verdict: two management cards, side by side >= 600 px. -->
+          <Grid x:Name="ManagementGrid" Classes="reveal" ColumnDefinitions="*,12,*" RowDefinitions="Auto,0,Auto">
+            <c:ManagementCard x:Name="IdentityCard" Overline="Manage identity in" VerticalAlignment="Stretch"/>
+            <c:ManagementCard x:Name="MailboxCard" Grid.Column="2" Overline="Manage mailbox in"
+                              VerticalAlignment="Stretch"/>
+          </Grid>
+
+          <c:InfoBar x:Name="GuidanceBar" Classes="reveal" Severity="Informational" IsClosable="False"
+                     Title="Guidance" IsOpen="False"/>
+
+          <!-- Detail cards: left Identity details, Account; right Mail, Licenses/Group. -->
+          <Grid x:Name="DetailsGrid" Classes="reveal" ColumnDefinitions="*,12,*" RowDefinitions="Auto,0,Auto">
+            <StackPanel x:Name="DetailsLeft" Spacing="12">
+              <Border x:Name="IdentityDetailsCard" Classes="card">
+                <StackPanel>
+                  <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+                    <PathIcon Data="{StaticResource Icon.ContactCard16}" Width="16" Height="16" Classes="secondary"/>
+                    <TextBlock Classes="bodyStrong" Text="Identity details" AutomationProperties.HeadingLevel="2"/>
+                  </StackPanel>
+                  <StackPanel x:Name="IdentityRows"/>
+                </StackPanel>
+              </Border>
+              <Border x:Name="AccountCard" Classes="card">
+                <StackPanel>
+                  <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+                    <PathIcon Data="{StaticResource Icon.Person}" Width="16" Height="16" Classes="secondary"/>
+                    <TextBlock Classes="bodyStrong" Text="Account" AutomationProperties.HeadingLevel="2"/>
+                  </StackPanel>
+                  <StackPanel x:Name="AccountRows"/>
+                </StackPanel>
+              </Border>
+            </StackPanel>
+            <StackPanel x:Name="DetailsRight" Grid.Column="2" Spacing="12">
+              <Border x:Name="MailCard" Classes="card">
+                <StackPanel>
+                  <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+                    <PathIcon Data="{StaticResource Icon.Mail}" Width="16" Height="16" Classes="secondary"/>
+                    <TextBlock Classes="bodyStrong" Text="Mail" AutomationProperties.HeadingLevel="2"/>
+                  </StackPanel>
+                  <StackPanel x:Name="MailRows"/>
+                </StackPanel>
+              </Border>
+              <Border x:Name="LicensesCard" Classes="card">
+                <StackPanel>
+                  <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+                    <PathIcon Data="{StaticResource Icon.Ribbon16}" Width="16" Height="16" Classes="secondary"/>
+                    <TextBlock x:Name="LicensesTitle" Classes="bodyStrong" Text="Licenses"
+                               AutomationProperties.HeadingLevel="2"/>
+                  </StackPanel>
+                  <StackPanel x:Name="LicenseRows"/>
+                </StackPanel>
+              </Border>
+              <Border x:Name="GroupCard" Classes="card">
+                <StackPanel>
+                  <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+                    <PathIcon Data="{StaticResource Icon.Group}" Width="16" Height="16" Classes="secondary"/>
+                    <TextBlock Classes="bodyStrong" Text="Group" AutomationProperties.HeadingLevel="2"/>
+                  </StackPanel>
+                  <StackPanel x:Name="GroupRows"/>
+                </StackPanel>
+              </Border>
+            </StackPanel>
+          </Grid>
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
 </UserControl>

@@ -48,7 +48,7 @@ public partial class MainWindow : Window, IAppShell
         ConfigureChrome();
         ConfigureBackdrop();
 
-        _searchPage = new SearchPage(this);
+        _searchPage = new SearchPage(this, CreateLookupSource(Session));
         _settingsPage = new SettingsPage(this);
         _aboutPage = new AboutPage(this);
 
@@ -91,6 +91,14 @@ public partial class MainWindow : Window, IAppShell
     }
 
     public AppSession Session { get; }
+
+    /// <summary>True when started with --preview or HYBRID_PREVIEW=1: Search shows sample data.</summary>
+    public static bool IsPreviewMode =>
+        Environment.GetCommandLineArgs().Contains("--preview", StringComparer.OrdinalIgnoreCase) ||
+        Environment.GetEnvironmentVariable("HYBRID_PREVIEW") == "1";
+
+    private static ILookupSource CreateLookupSource(AppSession session) =>
+        IsPreviewMode ? new PreviewLookupSource(session.Config) : new UnwiredLookupSource();
 
     public bool IsOverlayOpen => Overlay.IsOpen;
 
