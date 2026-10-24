@@ -5,6 +5,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.2.0] - 2026-09-22
+
+### Changed
+  - **Full Cross-Platform Rewrite:** hybrID is now a C#/.NET 10 [Avalonia](https://avaloniaui.net/) application and runs natively on **Windows, macOS, and Linux**. The PowerShell 5.1/WPF, Windows-only implementation has been fully replaced.
+  - **Active Directory Queries:** Moved from the RSAT `ActiveDirectory` PowerShell module (`Get-ADObject`) to direct LDAP queries via `System.DirectoryServices.Protocols`. No domain join or RSAT install is required anymore.
+  - **Entra ID / Graph Queries:** Moved from the Microsoft Graph PowerShell SDK to the native Microsoft.Graph C# SDK, authenticating via device-code sign-in.
+  - **Zero Runtime Prerequisites:** The app is now published as a self-contained, single-file executable per platform. Running it no longer requires PowerShell, RSAT, or the Graph PowerShell modules to be installed.
+  - **Configuration Location:** Moved from an in-repo `config.json` (edited in place inside the install directory) to a per-user profile directory (`%APPDATA%\hybrID\config.json` on Windows, `~/.config/hybrID/config.json` on macOS/Linux), seeded from a bundled default on first run.
+  - **Live Theme Switching:** Theme changes now apply immediately across all open windows; the old restart-required mechanism is gone.
+  - **Breaking Change:** Existing `config.json` files from 0.1.x are not compatible with the new schema (new LDAP server/port/encryption fields, Graph Tenant ID). Reconfigure via the Settings window after upgrading.
+
 ## [0.1.1] - 2026-03-06
 
 ### Fixed
@@ -27,5 +38,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Documentation:** Created standard docs including `README.md`, `CONTRIBUTING.md`, and `docs/Architecture.md`.
 
 [unreleased]:  
+[0.2.0]: https://github.com/griffeth-barker/hybrID/releases/tag/v0.2.0  
 [0.1.1]: https://github.com/griffeth-barker/hybrID/releases/tag/v0.1.1  
 [0.1.0]: https://github.com/griffeth-barker/hybrID/releases/tag/v0.1.0  

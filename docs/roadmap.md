@@ -9,6 +9,7 @@ This document outlines the potential features, enhancements, and architectural g
 - [x] **Modern UI:** Implement a dark-themed WPF GUI with hover tooltips and dynamic status bars.
 - [x] **Modular Architecture:** Split the monolithic script into a standard public/private PowerShell module structure.
 - [x] **Frictionless Auth:** Cache Microsoft Graph tokens to eliminate repetitive login prompts.
+- [x] **Native .NET Rewrite:** Transitioned from PowerShell/WPF (Windows-only) to a compiled C#/Avalonia application running natively on Windows, macOS, and Linux.
 
 ## Short-Term Enhancements
 These are quick-win features designed to immediately improve the day-to-day quality of life for helpdesk technicians.
@@ -24,9 +25,8 @@ These features will require adding new capabilities to the UI and expanding our 
 
 ## Long-Term Vision
 Big-picture goals to transition the tool from a helpful script to an enterprise-grade utility.
-- [ ] **Pester Testing:** Write a comprehensive suite of unit tests for the logic layer (testing standard user, synced user, cloud-only user, etc.) to ensure future updates don't break the routing logic.
+- [ ] **Automated Testing:** Write a comprehensive suite of unit tests (xUnit) for the `Services/` logic layer (testing standard user, synced user, cloud-only user, etc.) to ensure future updates don't break the routing logic.
 - [ ] **Intune Integration:** Add a check to see if the user has a Primary Device registered in Intune, providing a deep link to the device blade.
-- [ ] **Native .NET Rewrite?** Transition the PowerShell/WPF hybrid into a compiled, standalone C# application for massive performance gains, true multi-threading (no UI freezing during heavy queries), and easier deployment. Not sure if this one will ever happen.
 
 ## How to Influence the Roadmap
 Do you have a feature request that isn't listed here? Please open an **Issue** in the repository.

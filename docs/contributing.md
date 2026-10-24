@@ -1,93 +1,80 @@
 # Contributing to hybrID
-First off, thank you for considering contributing to hybrID! This tool is designed to make hybrid identity management frictionless, and community contributions are what keep it sharp.
+First off, thank you for considering contributing to hybrID! This tool is designed to make hybrid identity management frictionless across every platform, and community contributions are what keep it sharp.
 
 This document outlines the architecture, coding standards, and workflow for contributing to the project.
 
 ## Project Architecture
 
-hybrID is built using a modular Model-View-Controller (MVC) approach. We strictly separate UI markup, application logic, and configuration state to make the codebase maintainable and scalable.
+hybrID is a C#/.NET 10 [Avalonia](https://avaloniaui.net/) desktop application. We separate presentation (Views), business logic (Services), and data shapes (Models) into distinct folders under `src/HybridID/`.
 
 ```text
 hybrID/
 ├── assets/              # GitHub repository assets (readmes, badges)
-├── build/               # Build scripts (e.g., PS2EXE wrappers)
-├── docs/                # Project documentation
-├── hybrID/              # Core Application Directory
-│   ├── assets/          # Static app resources (icons, images)
-│   ├── config/          # Application state (config.json)
-│   ├── private/         # Internal PowerShell logic & helper functions
-│   ├── public/          # Main controller script (hybrID.ps1)
-│   └── ui/              # XAML presentation layer files
-├── tests/               # Pester tests
-├── .gitignore
+├── build/                # build.ps1 (dotnet publish wrapper) and version.json
+├── docs/                 # Project documentation
+├── src/
+│   └── HybridID/
+│       ├── Assets/       # Static app resources (icons, images)
+│       ├── Models/       # Plain data types - AppConfig, AdLookupResult, GraphLookupResult, IdentityLookupResult
+│       ├── Services/     # Business logic (see below)
+│       ├── Themes/       # Avalonia theme resource dictionaries
+│       └── Views/        # Windows/dialogs (AXAML + code-behind)
+├── hybrID.slnx
 └── README.md
 ```
 
 ### Component Breakdown
-#### `public/hybrID.ps1`  
-The main controller. It initializes the environment, loads the global variables, dynamically imports the UI, and binds the events.
 
-#### `private/*.ps1`  
-The brains of the operation. Each distinct feature (e.g., Invoke-Search.ps1, Show-Settings.ps1) lives in its own file here.
+#### `Views/*.axaml` + `*.axaml.cs`
+Presentation layer. `MainWindow` is the search UI; `SettingsWindow`, `AboutWindow`, `AlertDialog`, `AdCredentialDialog`, and `DeviceCodeDialog` are the supporting windows. We use plain code-behind (no MVVM framework) — this is intentional, matching the app's original simplicity. Keep it that way; don't introduce ReactiveUI/CommunityToolkit.Mvvm without a real need.
 
-#### `ui/*.xaml`  
-The presentation layer. All UI layout must be done in these files, never hardcoded as strings inside PowerShell scripts.
+#### `Services/*.cs`
+Where all logic lives:
+  - `LdapIdentityService` — direct LDAP queries against AD via `System.DirectoryServices.Protocols` (replaces the old `Get-ADObject`/RSAT dependency; no domain join required).
+  - `GraphAuthService` / `GraphIdentityService` — Microsoft Graph queries via the official `Microsoft.Graph` C# SDK with device-code sign-in (replaces the Graph PowerShell SDK).
+  - `IdentityLookupService` — orchestrates the two above and contains the routing logic that decides where an identity's mailbox actually lives (on-prem, hybrid remote mailbox, or cloud-only).
+  - `ConfigService` — loads/saves the per-user config file.
+  - `ThemeService` — applies the Light/Dark/System theme via Avalonia's `RequestedThemeVariant`.
+  - `UrlLauncher` — opens a URL in the OS default browser (`Process.Start` with `UseShellExecute`, works unmodified on all three platforms).
 
-#### `config/config.json`  
-The persistent state file that holds user preferences (themes, FQDNs).
+#### `Models/*.cs`
+Plain, dependency-free data types: `AppConfig` (the config schema), `AdLookupResult`, `GraphLookupResult`, `IdentityLookupResult`, `ManagementLink`.
+
+#### `Themes/Theme.axaml`
+Defines the app's palette as an Avalonia `ResourceDictionary` with `ThemeDictionaries` for `Light` and `Dark` (`WindowBg`, `PanelBg`, `InputBg`, `AppBorderBrush`, `PrimaryText`, `SecondaryText`, `NotesText`, `LinkText`, `StatusBarBg`, plus theme-invariant `StatusInfoBrush`/`StatusSuccessBrush`/`StatusErrorBrush`/`StatusReadyBrush`). We build on Avalonia's built-in `FluentTheme` rather than hand-rolled `ControlTemplate`s — Fluent already gives correct light/dark, rounded corners, and control states out of the box, so we only override the app-specific palette and let the brand accent color (`#007ACC`) flow through `SystemAccentColor`.
+
+#### `config.json` (per-user, not in the repo)
+Persistent state, seeded on first run from the bundled `config.default.json`: `settings` (On-Prem Exchange FQDN, LDAP connection details, Graph Tenant ID, Theme) and `managementUrls` (URL templates with `{id}`/`{fqdn}` placeholders for Entra/EXO/On-Prem ECP).
 
 ## Design & Theming Standards
-hybrID features a dynamic theming engine (Dark, Light, and System). If you are adding new UI elements or windows, you must adhere to the following UI standards:
-
-  - **No Hardcoded Hex Colors**: Never use hardcoded colors (e.g., Background="#1E1E1E") in the XAML. You must use the application's global DynamicResource tokens:
-    - `{DynamicResource WindowBg}`: Base background for windows.
-    - `{DynamicResource PanelBg}`: Elevated background for inner panels or popups.
-    - `{DynamicResource InputBg}`: Background for TextBoxes and ComboBoxes.
-    - `{DynamicResource BorderBrush}`: Borders and dividers.
-    - `{DynamicResource PrimaryText}`: Main reading text.
-    - `{DynamicResource SecondaryText}`: Labels and subtitles.
-    - `{DynamicResource NotesText}`: Specifically for the AD Notes field.
-
-  - **Rounded Corners**: Modern Windows UI standards apply. 
-    - Use `<Border CornerRadius="6">` for buttons and input fields
-    - Use `CornerRadius="8"` for larger panels.
-
-  - **Icons**: Use the native Windows **Segoe MDL2 Assets** font for icons instead of emojis or external images. (e.g., `&#xE713;` for the Settings gear).
-  - **Window Icons (Popups & Child Windows)**: Child windows spawned by the main window should always inherit its application icon in the Title Bar:
-   ```powershell
-   if ($global:MainWindow.Icon) {
-       $TargetWindow.Icon = $global:MainWindow.Icon
-   }
-   ```
+  - **No hardcoded colors in Views.** Use the `DynamicResource` tokens from `Themes/Theme.axaml` so windows respond to theme changes automatically. Theme switches apply live across every open window — there is no restart mechanism, and there shouldn't need to be one.
+  - **Rounded corners / brand accent**: handled by Fluent theme defaults plus `SystemAccentColor`; don't reintroduce custom `ControlTemplate`s for standard controls (buttons, text boxes, combo boxes) unless Fluent genuinely can't do what's needed.
+  - **Window Icons**: set via `Icon="avares://HybridID/Assets/hybrid-icon.png"` on each `Window` in AXAML directly — Avalonia doesn't need the runtime icon-inheritance workaround the old WPF app required.
 
 ## Coding Standards
-  - **PowerShell Version**: Code must be compatible with Windows PowerShell 5.1 (the default on most admin workstations).
-
-  - Variable Scope:
-
-    - Use `$global:` for configuration arrays (`$global:Config`), directory paths (`$global:uiDir`), or brushes that must be accessed across multiple separated .ps1 files.
-
-    - Use standard scoping (`$variable`) for temporary data within functions.
-
-  - **Separation of Concerns**: Do not put business logic inside hybrID.ps1. Write a helper function in the private folder and bind it in the controller.
-
-  - **Error Handling**: Use try/catch blocks for external API calls (Microsoft Graph, Active Directory) and provide clean, themed XAML popups for errors rather than writing to the console or using legacy WinForms Message Boxes.
+  - **Language/runtime**: C#, .NET 10, nullable reference types enabled (`<Nullable>enable</Nullable>`) — don't add `!` suppressions to silence a real null risk; fix the null-safety instead.
+  - **Separation of Concerns**: business logic belongs in `Services/`, not in a View's code-behind. Code-behind should orchestrate (call a service, bind the result to controls) — see `MainWindow.axaml.cs` for the pattern.
+  - **Error Handling**: external AD/Graph calls should fail gracefully (see `IdentityLookupService.LookupAsync`'s try/catch-and-fall-through pattern) rather than crashing the app or the search.
+  - **Platform quirks worth knowing**:
+    - StartTLS is Windows-only — `System.DirectoryServices.Protocols` doesn't support it on macOS/Linux. LDAPS is the cross-platform default; `LdapIdentityService.Connect` throws a clear `PlatformNotSupportedException` if StartTLS is requested on a non-Windows OS.
+    - The programmatic "skip certificate check" (`VerifyServerCertificate`) is also Windows-only; on macOS/Linux it must be done via the `LDAPTLS_REQCERT` environment variable set *before* the process launches (see `docs/getting-started.md`).
+    - Graph auth uses the public "Microsoft Graph Command Line Tools" client ID (`14d82eec-204b-4c2f-b7e8-296a70dab67e`) — the same one the Graph PowerShell SDK uses — via device-code flow, so no app registration or redirect URI is required out of the box.
 
 ## Development Workflow
   1. Fork the repository and clone it to your local machine.
-  2. Create a feature branch (git checkout -b feature/Add-Export-Button).
-  3. Make your changes within the hybrID/ directory structure.
-  4. Run the application by executing hybrID/public/hybrID.ps1 in your terminal. Ensure the app launches cleanly from the terminal and that your feature respects both Dark and Light themes.
-     > There currently is not a test harness, but that may be an eventual addition.
+  2. Create a feature branch (`git checkout -b feature/Add-Export-Button`).
+  3. Make your changes within `src/HybridID/`.
+  4. Build and run: `dotnet build hybrID.slnx` from the repo root, or `dotnet run --project src/HybridID`. Confirm your change respects both Dark and Light themes.
+     > There currently is not a test harness, but that may be an eventual addition (likely xUnit, given the move away from PowerShell/Pester).
   5. Commit your changes with clean, descriptive commit messages.
   6. Push to your fork and submit a PR to the main branch.
 
 ### Adding a New Setting
 If you are adding a new user-configurable setting:
 
-  1. Add the default key/value pair to `config/config.json`.
-  2. Update the `ui/settings.xaml` grid to include the new label and input control.
-  3. Update the `Show-Settings.ps1` script to map the control, populate it on load, and save it to `$global:Config` on apply.
+  1. Add the property to `AppSettings` in `src/HybridID/Models/AppConfig.cs`, and its default to `src/HybridID/config.default.json`.
+  2. Add the corresponding label/input to `src/HybridID/Views/SettingsWindow.axaml`.
+  3. Wire it up in `SettingsWindow.axaml.cs` — populate on load, save into the config object and persist to disk (`ConfigService.Save`) on Apply.
 
 ## Need Help?
 If you are unsure about the architecture or how to implement a specific feature, feel free to open a Draft PR or an Issue to discuss it!
