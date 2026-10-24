@@ -1,0 +1,86 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="using:HybridID.Controls">
+  <!-- InfoBar (docs/design/ui-spec.md section 6.2) -->
+  <ControlTheme x:Key="{x:Type c:InfoBar}" TargetType="c:InfoBar">
+    <Setter Property="Background" Value="{DynamicResource SystemFillColorAttentionBackgroundBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}"/>
+    <Setter Property="MinHeight" Value="48"/>
+    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.167" Easing="0,0,0,1"/>
+      </Transitions>
+    </Setter>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                MinHeight="{TemplateBinding MinHeight}">
+          <Grid ColumnDefinitions="16,16,12,*,Auto,Auto">
+            <PathIcon x:Name="PART_Icon" Grid.Column="1"
+                      Width="16" Height="16"
+                      Margin="0,16,0,0"
+                      VerticalAlignment="Top"
+                      IsVisible="{TemplateBinding IsIconVisible}"/>
+            <SelectableTextBlock x:Name="PART_Text" Grid.Column="3"
+                                 Classes="body"
+                                 Margin="0,14,16,14"
+                                 VerticalAlignment="Center"
+                                 TextWrapping="Wrap"
+                                 Foreground="{TemplateBinding Foreground}"/>
+            <ContentPresenter x:Name="PART_Action" Grid.Column="4"
+                              Margin="0,8,12,8"
+                              VerticalAlignment="Top"
+                              Content="{TemplateBinding ActionContent}"
+                              IsVisible="{TemplateBinding ActionContent, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+            <Button x:Name="PART_CloseButton" Grid.Column="5"
+                    Classes="subtle icon"
+                    Width="40" Height="40"
+                    Margin="0,4,4,4"
+                    VerticalAlignment="Top"
+                    IsVisible="{TemplateBinding IsClosable}"
+                    ToolTip.Tip="Close"
+                    AutomationProperties.Name="Close">
+              <PathIcon Data="{DynamicResource Icon.Dismiss}" Width="16" Height="16"/>
+            </Button>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:informational">
+      <Setter Property="Background" Value="{DynamicResource SystemFillColorAttentionBackgroundBrush}"/>
+      <Style Selector="^ /template/ PathIcon#PART_Icon">
+        <Setter Property="Data" Value="{DynamicResource Icon.InfoFilled}"/>
+        <Setter Property="Foreground" Value="{DynamicResource SystemFillColorAttentionBrush}"/>
+      </Style>
+    </Style>
+    <Style Selector="^:success">
+      <Setter Property="Background" Value="{DynamicResource SystemFillColorSuccessBackgroundBrush}"/>
+      <Style Selector="^ /template/ PathIcon#PART_Icon">
+        <Setter Property="Data" Value="{DynamicResource Icon.CheckCircleFilled}"/>
+        <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+      </Style>
+    </Style>
+    <Style Selector="^:warning">
+      <Setter Property="Background" Value="{DynamicResource SystemFillColorCautionBackgroundBrush}"/>
+      <Style Selector="^ /template/ PathIcon#PART_Icon">
+        <Setter Property="Data" Value="{DynamicResource Icon.WarningFilled}"/>
+        <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}"/>
+      </Style>
+    </Style>
+    <Style Selector="^:error">
+      <Setter Property="Background" Value="{DynamicResource SystemFillColorCriticalBackgroundBrush}"/>
+      <Style Selector="^ /template/ PathIcon#PART_Icon">
+        <Setter Property="Data" Value="{DynamicResource Icon.ErrorFilled}"/>
+        <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+      </Style>
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>

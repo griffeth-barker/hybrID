@@ -1,0 +1,71 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="using:HybridID.Controls">
+  <!-- OverlayDialog (docs/design/ui-spec.md section 6.7). The outer Border carries the shadow
+       (ClipToBounds would clip it); the inner Border clips content to the rounded corners. -->
+  <ControlTheme x:Key="{x:Type c:OverlayDialog}" TargetType="c:OverlayDialog">
+    <Setter Property="MinWidth" Value="320"/>
+    <Setter Property="MaxWidth" Value="548"/>
+    <Setter Property="HorizontalAlignment" Value="Center"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+    <Setter Property="KeyboardNavigation.TabNavigation" Value="Cycle"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border x:Name="PART_Frame"
+                Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="{DynamicResource OverlayCornerRadius}"
+                BoxShadow="{DynamicResource ShadowDialog}">
+          <Border CornerRadius="7" ClipToBounds="True">
+            <Grid RowDefinitions="*,Auto">
+              <Border Background="{DynamicResource LayerFillColorAltBrush}"
+                      Padding="{DynamicResource DialogPadding}">
+                <DockPanel>
+                  <TextBlock DockPanel.Dock="Top"
+                             Classes="subtitle"
+                             Margin="0,0,0,12"
+                             TextWrapping="Wrap"
+                             Text="{TemplateBinding Title}"
+                             IsVisible="{TemplateBinding Title, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                             AutomationProperties.HeadingLevel="1"/>
+                  <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                VerticalScrollBarVisibility="Auto">
+                    <ContentPresenter x:Name="PART_ContentPresenter"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalContentAlignment="Stretch"/>
+                  </ScrollViewer>
+                </DockPanel>
+              </Border>
+              <Border x:Name="PART_ButtonBar" Grid.Row="1"
+                      Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                      BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                      BorderThickness="0,1,0,0"
+                      Padding="{DynamicResource DialogPadding}">
+                <Grid x:Name="PART_ButtonGrid">
+                  <Button x:Name="PART_PrimaryButton"
+                          Height="32"
+                          HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Center"
+                          VerticalContentAlignment="Center"/>
+                  <Button x:Name="PART_SecondaryButton"
+                          Height="32"
+                          HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Center"
+                          VerticalContentAlignment="Center"/>
+                  <Button x:Name="PART_CloseButton"
+                          Height="32"
+                          HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Center"
+                          VerticalContentAlignment="Center"/>
+                </Grid>
+              </Border>
+            </Grid>
+          </Border>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

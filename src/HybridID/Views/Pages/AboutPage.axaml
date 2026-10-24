@@ -1,0 +1,15 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="HybridID.Views.Pages.AboutPage">
+  <!-- PLACEHOLDER (Phase 1/2): replaced by the full page in a later phase. -->
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="{DynamicResource PagePadding}"
+                MaxWidth="1000"
+                HorizontalAlignment="Stretch"
+                Spacing="8">
+      <TextBlock Classes="title" Text="About" AutomationProperties.HeadingLevel="1"/>
+      <TextBlock Classes="body secondary" TextWrapping="Wrap"
+                 Text="The about page is being implemented (spec section 5.3, Phase 5)."/>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

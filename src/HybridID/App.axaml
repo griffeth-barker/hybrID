@@ -1,0 +1,33 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="HybridID.App"
+             Name="hybrID"
+             RequestedThemeVariant="Default">
+    <!-- "Default" follows the OS theme; ThemeService overrides this at startup
+         based on the user's saved Theme setting (System/Light/Dark). -->
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://HybridID/Themes/Theme.axaml"/>
+                <ResourceInclude Source="avares://HybridID/Themes/Icons.axaml"/>
+                <ResourceInclude Source="avares://HybridID/Themes/Controls.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://HybridID/Themes/Typography.axaml"/>
+        <StyleInclude Source="avares://HybridID/Themes/AppStyles.axaml"/>
+    </Application.Styles>
+
+    <!-- macOS application menu (spec section 4.5). Ignored on Windows/Linux. -->
+    <NativeMenu.Menu>
+        <NativeMenu>
+            <NativeMenuItem Header="About hybrID" Click="OnAboutMenuClick"/>
+            <NativeMenuItemSeparator/>
+            <NativeMenuItem Header="Settings…" Gesture="Cmd+OemComma" Click="OnSettingsMenuClick"/>
+        </NativeMenu>
+    </NativeMenu.Menu>
+</Application>

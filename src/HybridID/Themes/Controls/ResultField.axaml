@@ -1,0 +1,153 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="using:HybridID.Controls">
+  <!-- ResultField / ResultListField (docs/design/ui-spec.md section 6.5) -->
+  <ControlTheme x:Key="{x:Type c:ResultField}" TargetType="c:ResultField">
+    <!-- Horizontal bleed so the hover background extends past the card's inner edge. -->
+    <Setter Property="Margin" Value="-8,0"/>
+    <Setter Property="Padding" Value="8,8"/>
+    <Setter Property="MinHeight" Value="56"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border x:Name="PART_Root"
+                Background="{TemplateBinding Background}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                Padding="{TemplateBinding Padding}"
+                MinHeight="{TemplateBinding MinHeight}">
+          <Border.Transitions>
+            <Transitions>
+              <BrushTransition Property="Background" Duration="0:0:0.083"/>
+            </Transitions>
+          </Border.Transitions>
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Spacing="2" VerticalAlignment="Center">
+              <TextBlock Classes="caption secondary" Text="{TemplateBinding Label}" TextWrapping="Wrap"/>
+              <Grid ColumnDefinitions="Auto,*">
+                <PathIcon x:Name="PART_ValueIcon"
+                          Width="12" Height="12"
+                          Margin="0,0,4,0"
+                          VerticalAlignment="Center"
+                          Data="{TemplateBinding ValueIcon}"
+                          IsVisible="False"/>
+                <SelectableTextBlock x:Name="PART_Value" Grid.Column="1"
+                                     Classes="body"
+                                     Text="{TemplateBinding Value}"
+                                     TextWrapping="Wrap"
+                                     Foreground="{TemplateBinding Foreground}"/>
+                <TextBlock x:Name="PART_Empty" Grid.Column="1"
+                           Classes="body tertiary"
+                           Text="—"
+                           IsVisible="False"/>
+              </Grid>
+            </StackPanel>
+            <c:CopyButton x:Name="PART_CopyButton" Grid.Column="1"
+                          Margin="8,0,0,0"
+                          VerticalAlignment="Center"
+                          Label="{TemplateBinding Label}"
+                          CopyText="{TemplateBinding EffectiveCopyText}"
+                          IsVisible="{TemplateBinding CanCopy}"/>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:pointerover /template/ Border#PART_Root">
+      <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+    </Style>
+    <Style Selector="^:mono /template/ SelectableTextBlock#PART_Value">
+      <Setter Property="FontFamily" Value="{DynamicResource FontFamilyMono}"/>
+      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="LineHeight" Value="20"/>
+    </Style>
+    <Style Selector="^:empty">
+      <Style Selector="^ /template/ SelectableTextBlock#PART_Value">
+        <Setter Property="IsVisible" Value="False"/>
+      </Style>
+      <Style Selector="^ /template/ TextBlock#PART_Empty">
+        <Setter Property="IsVisible" Value="True"/>
+      </Style>
+      <Style Selector="^ /template/ c|CopyButton#PART_CopyButton">
+        <Setter Property="IsVisible" Value="False"/>
+      </Style>
+    </Style>
+    <Style Selector="^:valueicon /template/ PathIcon#PART_ValueIcon">
+      <Setter Property="IsVisible" Value="True"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+    </Style>
+    <Style Selector="^:onprem /template/ PathIcon#PART_ValueIcon">
+      <Setter Property="Foreground" Value="{DynamicResource LocationOnPremForegroundBrush}"/>
+    </Style>
+    <Style Selector="^:hybrid /template/ PathIcon#PART_ValueIcon">
+      <Setter Property="Foreground" Value="{DynamicResource LocationHybridForegroundBrush}"/>
+    </Style>
+    <Style Selector="^:cloud /template/ PathIcon#PART_ValueIcon">
+      <Setter Property="Foreground" Value="{DynamicResource LocationCloudForegroundBrush}"/>
+    </Style>
+    <Style Selector="^:success /template/ PathIcon#PART_ValueIcon">
+      <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+    </Style>
+    <Style Selector="^:caution /template/ PathIcon#PART_ValueIcon">
+      <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}"/>
+    </Style>
+    <Style Selector="^:critical /template/ PathIcon#PART_ValueIcon">
+      <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+    </Style>
+    <Style Selector="^:neutral /template/ PathIcon#PART_ValueIcon">
+      <Setter Property="Foreground" Value="{DynamicResource SystemFillColorNeutralBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type c:ResultListField}" TargetType="c:ResultListField">
+    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+    <Setter Property="Padding" Value="0,8"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <StackPanel Margin="{TemplateBinding Padding}" Spacing="4">
+          <Grid ColumnDefinitions="*,Auto" MinHeight="28">
+            <TextBlock Classes="caption secondary" VerticalAlignment="Center"
+                       Text="{TemplateBinding Label}" TextWrapping="Wrap"/>
+            <Button x:Name="PART_CopyAllButton" Grid.Column="1"
+                    Height="28" MinHeight="28"
+                    Padding="8,0"
+                    VerticalContentAlignment="Center"
+                    ToolTip.Tip="{TemplateBinding CopyAllToolTip}"
+                    AutomationProperties.Name="{TemplateBinding CopyAllToolTip}">
+              <TextBlock Classes="caption" Text="Copy all"/>
+            </Button>
+          </Grid>
+          <ItemsControl x:Name="PART_Items">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="c:ResultListItem">
+                <Grid ColumnDefinitions="Auto,*,Auto" MinHeight="36">
+                  <c:StatusPill Classes="small"
+                                Margin="0,0,8,0"
+                                Text="{Binding Tag}"
+                                Kind="{Binding TagKind}"
+                                IsVisible="{Binding HasTag}"/>
+                  <TextBlock Grid.Column="1"
+                             Classes="body"
+                             VerticalAlignment="Center"
+                             TextWrapping="Wrap"
+                             Text="{Binding Text}"
+                             FontWeight="{Binding TextWeight}"/>
+                  <c:CopyButton Grid.Column="2"
+                                Width="28" Height="28"
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"
+                                Label="{Binding Text}"
+                                CopyText="{Binding EffectiveCopyText}"/>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <HyperlinkButton x:Name="PART_ShowAllButton" IsVisible="False" Padding="0,4"/>
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

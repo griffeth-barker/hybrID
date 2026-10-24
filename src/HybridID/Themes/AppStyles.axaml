@@ -1,0 +1,269 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:HybridID.Controls"
+        xmlns:legacy="using:HybridID.Views.Legacy">
+  <!--
+    App-wide style overrides and variants (docs/design/ui-spec.md sections 4.3, 6.1, 6.9, 6.11,
+    6.13). Colors via DynamicResource tokens only (Themes/Theme.axaml).
+  -->
+
+  <!-- ======================================================== Buttons (6.11) -->
+  <!-- Standard button: Fluent theme, 32 px high via ButtonPadding 11,5,11,6 (Theme.axaml); colors
+       from the Fluent ButtonBackground* mapping in Theme.axaml. -->
+  <Style Selector="Button.subtle">
+    <Setter Property="Background" Value="{DynamicResource SubtleFillColorTransparentBrush}"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+  </Style>
+  <Style Selector="Button.subtle /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.083"/>
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Button.subtle:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+  </Style>
+  <Style Selector="Button.subtle:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+  </Style>
+  <Style Selector="Button.subtle:disabled /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}"/>
+  </Style>
+
+  <!-- Icon-only button: combine with subtle. Must have ToolTip.Tip + AutomationProperties.Name. -->
+  <Style Selector="Button.icon">
+    <Setter Property="Width" Value="32"/>
+    <Setter Property="Height" Value="32"/>
+    <Setter Property="MinHeight" Value="0"/>
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+  </Style>
+  <Style Selector="Button.icon PathIcon">
+    <Setter Property="Width" Value="16"/>
+    <Setter Property="Height" Value="16"/>
+  </Style>
+
+  <!-- CopyButton check state. -->
+  <Style Selector="Button.copy:copied PathIcon">
+    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+  </Style>
+
+  <!-- ProgressRing inside an accent button uses the on-accent text color. -->
+  <Style Selector="Button.accent c|ProgressRing">
+    <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}"/>
+  </Style>
+  <Style Selector="Button:disabled c|ProgressRing">
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}"/>
+  </Style>
+
+  <!-- Title-bar status chips (6.9). -->
+  <Style Selector="Button.chip">
+    <Setter Property="Height" Value="28"/>
+    <Setter Property="MinHeight" Value="28"/>
+    <Setter Property="CornerRadius" Value="14"/>
+    <Setter Property="Padding" Value="10,0"/>
+    <Setter Property="Background" Value="{DynamicResource SubtleFillColorTransparentBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+  </Style>
+  <Style Selector="Button.chip:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+  </Style>
+  <Style Selector="Button.chip:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+  </Style>
+  <Style Selector="Button.chip:pressed">
+    <Setter Property="RenderTransform" Value="none"/>
+  </Style>
+
+  <!-- Status dot (chips, chip flyouts): hollow ring or a semantic fill; .pulse = opacity 0.4-1, 1 s. -->
+  <Style Selector="Ellipse.statusDot">
+    <Setter Property="Width" Value="8"/>
+    <Setter Property="Height" Value="8"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="Fill" Value="Transparent"/>
+    <Setter Property="Stroke" Value="{DynamicResource ControlStrongStrokeColorDefaultBrush}"/>
+    <Setter Property="StrokeThickness" Value="1.5"/>
+  </Style>
+  <Style Selector="Ellipse.statusDot.attention">
+    <Setter Property="Fill" Value="{DynamicResource SystemFillColorAttentionBrush}"/>
+    <Setter Property="StrokeThickness" Value="0"/>
+  </Style>
+  <Style Selector="Ellipse.statusDot.success">
+    <Setter Property="Fill" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+    <Setter Property="StrokeThickness" Value="0"/>
+  </Style>
+  <Style Selector="Ellipse.statusDot.caution">
+    <Setter Property="Fill" Value="{DynamicResource SystemFillColorCautionBrush}"/>
+    <Setter Property="StrokeThickness" Value="0"/>
+  </Style>
+  <Style Selector="Ellipse.statusDot.critical">
+    <Setter Property="Fill" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+    <Setter Property="StrokeThickness" Value="0"/>
+  </Style>
+  <Style Selector="Ellipse.statusDot.pulse">
+    <Style.Animations>
+      <Animation Duration="0:0:1" IterationCount="Infinite" PlaybackDirection="Alternate">
+        <KeyFrame Cue="0%">
+          <Setter Property="Opacity" Value="1"/>
+        </KeyFrame>
+        <KeyFrame Cue="100%">
+          <Setter Property="Opacity" Value="0.4"/>
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+
+  <!-- ======================================================== Inputs -->
+  <Style Selector="TextBox.invalid, NumericUpDown.invalid /template/ TextBox">
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+  </Style>
+  <Style Selector="TextBox.invalid:pointerover /template/ Border#PART_BorderElement, TextBox.invalid:focus /template/ Border#PART_BorderElement">
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+  </Style>
+
+  <!-- Settings inputs: default width 280, stretch when the SettingsCard wraps (6.12, 5.2.2). -->
+  <Style Selector=":is(Control).settingsInput">
+    <Setter Property="Width" Value="280"/>
+  </Style>
+  <Style Selector="c|SettingsCard:wrapped :is(Control).settingsInput">
+    <Setter Property="Width" Value="NaN"/>
+    <Setter Property="MinWidth" Value="200"/>
+    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+  </Style>
+
+  <!-- ======================================================== Popups: solid, no backdrop (4.3) -->
+  <Style Selector="ToolTip">
+    <Setter Property="CornerRadius" Value="4"/>
+  </Style>
+  <Style Selector="FlyoutPresenter.chipFlyout">
+    <Setter Property="Padding" Value="16"/>
+    <Setter Property="Width" Value="320"/>
+    <Setter Property="MaxWidth" Value="320"/>
+  </Style>
+
+  <!-- ======================================================== Cards (6.1) -->
+  <Style Selector="Border.card">
+    <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource CardCornerRadius}"/>
+    <Setter Property="Padding" Value="{DynamicResource CardPadding}"/>
+  </Style>
+  <Style Selector="Border.divider">
+    <Setter Property="Height" Value="1"/>
+    <Setter Property="Background" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
+    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+  </Style>
+  <!-- Shortcut keycap (empty state shortcut list, 5.1.3). -->
+  <Style Selector="Border.keycap">
+    <Setter Property="CornerRadius" Value="4"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}"/>
+    <Setter Property="Padding" Value="6,2"/>
+  </Style>
+
+  <!-- MainWindow content frame (4.3): translucent layer; opaque on macOS vibrancy. -->
+  <Style Selector="Border.contentFrame">
+    <Setter Property="Background" Value="{DynamicResource LayerFillColorDefaultBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+    <Setter Property="BorderThickness" Value="1,1,0,0"/>
+    <Setter Property="CornerRadius" Value="8,0,0,0"/>
+  </Style>
+  <Style Selector="Border.contentFrame.opaque">
+    <Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorTertiaryBrush}"/>
+  </Style>
+
+  <!-- ======================================================== SettingsExpander (6.13) -->
+  <Style Selector="Expander.settings">
+    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource CardCornerRadius}"/>
+    <Setter Property="MinHeight" Value="68"/>
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorSecondaryBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+  </Style>
+  <Style Selector="Expander.settings /template/ Border#ExpanderContent">
+    <Setter Property="MinHeight" Value="0"/>
+  </Style>
+  <Style Selector="Expander.settings /template/ ToggleButton#ExpanderHeader">
+    <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+    <Setter Property="Padding" Value="16"/>
+  </Style>
+  <Style Selector="Expander.settings /template/ ToggleButton#ExpanderHeader:pointerover /template/ Border#ToggleButtonBackground">
+    <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+  </Style>
+  <Style Selector="Expander.settings /template/ ToggleButton#ExpanderHeader:pressed /template/ Border#ToggleButtonBackground">
+    <Setter Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+  </Style>
+  <Style Selector="Expander.settings /template/ ToggleButton#ExpanderHeader /template/ Path#ExpandCollapseChevron">
+    <Setter Property="Stroke" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+  </Style>
+  <Style Selector="Expander.settings /template/ ToggleButton#ExpanderHeader /template/ Border#ExpandCollapseChevronBorder">
+    <Setter Property="Background" Value="Transparent"/>
+  </Style>
+  <!-- Inline InfoBars inside the expander content. -->
+  <Style Selector="Expander.settings c|InfoBar">
+    <Setter Property="Margin" Value="58,8,16,8"/>
+  </Style>
+
+  <!-- ======================================================== Candidate list (5.1.9) -->
+  <Style Selector="ListBox.candidates">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Padding" Value="0"/>
+  </Style>
+  <Style Selector="ListBox.candidates ListBoxItem">
+    <Setter Property="Padding" Value="16,12"/>
+    <Setter Property="MinHeight" Value="64"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
+    <Setter Property="BorderThickness" Value="0,1,0,0"/>
+  </Style>
+  <Style Selector="ListBox.candidates ListBoxItem:nth-child(1)">
+    <Setter Property="BorderThickness" Value="0"/>
+  </Style>
+
+  <!-- ======================================================== LEGACY: delete with Views/Legacy (Phase 7) -->
+  <!-- Scoped to the legacy windows so the new UI keeps the Fluent accent button (spec 6.11). -->
+  <Style Selector="legacy|LegacyMainWindow Button.accent, legacy|LegacySettingsWindow Button.accent, legacy|LegacyAboutWindow Button.accent, legacy|LegacyAlertDialog Button.accent, legacy|LegacyAdCredentialDialog Button.accent, legacy|LegacyDeviceCodeDialog Button.accent">
+    <Setter Property="CornerRadius" Value="6"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="Cursor" Value="Hand"/>
+  </Style>
+  <Style Selector="Button.chrome">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Padding" Value="6"/>
+  </Style>
+  <Style Selector="Button.chrome:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="#22FFFFFF"/>
+  </Style>
+  <Style Selector="TextBlock.hyperlink">
+    <Setter Property="Foreground" Value="{DynamicResource LinkText}"/>
+    <Setter Property="TextDecorations" Value="Underline"/>
+    <Setter Property="Cursor" Value="Hand"/>
+  </Style>
+  <!-- END LEGACY -->
+</Styles>

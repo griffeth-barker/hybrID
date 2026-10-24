@@ -1,0 +1,120 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="HybridID.Controls.AppTitleBar"
+             Height="48"
+             Background="Transparent">
+  <!-- Columns (Windows): 8, 40, 8, 16, 12, Auto, *, Auto, 8, Auto, 8, CaptionReserve.
+       AppTitleBar.axaml.cs adapts the widths per OS (macOS: 80 px traffic-light inset, no icon or
+       title; Linux: in-window 40 px app bar). -->
+  <Grid x:Name="Root" ColumnDefinitions="8,40,8,16,12,Auto,*,Auto,8,Auto,8,138">
+    <Button x:Name="PaneToggle" Grid.Column="1"
+            Classes="subtle icon"
+            Width="40" Height="36"
+            VerticalAlignment="Center">
+      <PathIcon Data="{DynamicResource Icon.Navigation}" Width="16" Height="16"/>
+    </Button>
+
+    <Image x:Name="AppIcon" Grid.Column="3"
+           Width="16" Height="16"
+           VerticalAlignment="Center"
+           Source="avares://HybridID/Assets/hybrid-icon.png"
+           RenderOptions.BitmapInterpolationMode="HighQuality"/>
+    <TextBlock x:Name="TitleText" Grid.Column="5"
+               Classes="caption primary"
+               VerticalAlignment="Center"
+               Text="hybrID"/>
+
+    <!-- Active Directory chip -->
+    <Button x:Name="AdChip" Grid.Column="7" Classes="chip" VerticalAlignment="Center">
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <Ellipse x:Name="AdDot" Classes="statusDot"/>
+        <TextBlock x:Name="AdChipLabel" Classes="caption" VerticalAlignment="Center" Text="Active Directory"/>
+      </StackPanel>
+      <Button.Flyout>
+        <Flyout Placement="BottomEdgeAlignedRight" FlyoutPresenterClasses="chipFlyout">
+          <StackPanel Spacing="12">
+            <TextBlock Classes="bodyStrong" Text="Active Directory"/>
+            <StackPanel Spacing="8">
+              <StackPanel x:Name="AdStatusRow" Spacing="2">
+                <TextBlock Classes="caption secondary" Text="Status"/>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <Ellipse x:Name="AdFlyoutDot" Classes="statusDot"/>
+                  <TextBlock x:Name="AdStatusText" Classes="body" TextWrapping="Wrap"/>
+                </StackPanel>
+              </StackPanel>
+              <StackPanel x:Name="AdServerRow" Spacing="2">
+                <TextBlock Classes="caption secondary" Text="Server"/>
+                <SelectableTextBlock x:Name="AdServerText" Classes="body" TextWrapping="Wrap"/>
+              </StackPanel>
+              <StackPanel x:Name="AdUserRow" Spacing="2">
+                <TextBlock Classes="caption secondary" Text="Signed in as"/>
+                <SelectableTextBlock x:Name="AdUserText" Classes="body" TextWrapping="Wrap"/>
+              </StackPanel>
+              <StackPanel x:Name="AdBaseDnRow" Spacing="2">
+                <TextBlock Classes="caption secondary" Text="Base DN"/>
+                <SelectableTextBlock x:Name="AdBaseDnText" Classes="body mono" TextWrapping="Wrap"/>
+              </StackPanel>
+              <SelectableTextBlock x:Name="AdErrorText" Classes="caption critical" TextWrapping="Wrap"/>
+            </StackPanel>
+            <WrapPanel Orientation="Horizontal">
+              <Button x:Name="AdDisconnectButton" Margin="0,0,8,0">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <PathIcon Data="{DynamicResource Icon.SignOut16}" Width="16" Height="16"/>
+                  <TextBlock Text="Disconnect" VerticalAlignment="Center"/>
+                </StackPanel>
+              </Button>
+              <Button x:Name="AdSignInButton" Classes="accent" Content="Sign in" Margin="0,0,8,0"/>
+              <Button x:Name="AdSetupButton" Classes="accent" Content="Set up in Settings" Margin="0,0,8,0"/>
+              <HyperlinkButton x:Name="AdSettingsLink" Content="Settings" VerticalAlignment="Center"/>
+            </WrapPanel>
+          </StackPanel>
+        </Flyout>
+      </Button.Flyout>
+    </Button>
+
+    <!-- Entra ID chip -->
+    <Button x:Name="EntraChip" Grid.Column="9" Classes="chip" VerticalAlignment="Center">
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <Ellipse x:Name="EntraDot" Classes="statusDot"/>
+        <TextBlock x:Name="EntraChipLabel" Classes="caption" VerticalAlignment="Center" Text="Entra ID"/>
+      </StackPanel>
+      <Button.Flyout>
+        <Flyout Placement="BottomEdgeAlignedRight" FlyoutPresenterClasses="chipFlyout">
+          <StackPanel Spacing="12">
+            <TextBlock Classes="bodyStrong" Text="Entra ID"/>
+            <StackPanel Spacing="8">
+              <StackPanel Spacing="2">
+                <TextBlock Classes="caption secondary" Text="Status"/>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <Ellipse x:Name="EntraFlyoutDot" Classes="statusDot"/>
+                  <TextBlock x:Name="EntraStatusText" Classes="body" TextWrapping="Wrap"/>
+                </StackPanel>
+              </StackPanel>
+              <StackPanel Spacing="2">
+                <TextBlock Classes="caption secondary" Text="Tenant"/>
+                <SelectableTextBlock x:Name="EntraTenantText" Classes="body" TextWrapping="Wrap"/>
+              </StackPanel>
+              <SelectableTextBlock x:Name="EntraErrorText" Classes="caption critical" TextWrapping="Wrap"/>
+            </StackPanel>
+            <WrapPanel Orientation="Horizontal">
+              <Button x:Name="EntraShowCodeButton" Classes="accent" Content="Show sign-in code" Margin="0,0,8,0"/>
+              <HyperlinkButton x:Name="EntraSettingsLink" Content="Settings" VerticalAlignment="Center"/>
+            </WrapPanel>
+          </StackPanel>
+        </Flyout>
+      </Button.Flyout>
+    </Button>
+  </Grid>
+
+  <UserControl.Styles>
+    <Style Selector="Image#AppIcon">
+      <Setter Property="Opacity" Value="1"/>
+    </Style>
+    <Style Selector=":is(UserControl).inactive Image#AppIcon">
+      <Setter Property="Opacity" Value="0.6"/>
+    </Style>
+    <Style Selector=":is(UserControl).inactive TextBlock#TitleText">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}"/>
+    </Style>
+  </UserControl.Styles>
+</UserControl>

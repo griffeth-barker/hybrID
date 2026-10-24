@@ -1,0 +1,14 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Merges the ControlThemes of all custom controls (Themes/Controls/*.axaml). -->
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceInclude Source="avares://HybridID/Themes/Controls/InfoBar.axaml"/>
+    <ResourceInclude Source="avares://HybridID/Themes/Controls/SettingsCard.axaml"/>
+    <ResourceInclude Source="avares://HybridID/Themes/Controls/StatusPill.axaml"/>
+    <ResourceInclude Source="avares://HybridID/Themes/Controls/ResultField.axaml"/>
+    <ResourceInclude Source="avares://HybridID/Themes/Controls/ManagementCard.axaml"/>
+    <ResourceInclude Source="avares://HybridID/Themes/Controls/OverlayDialog.axaml"/>
+    <ResourceInclude Source="avares://HybridID/Themes/Controls/ProgressRing.axaml"/>
+    <ResourceInclude Source="avares://HybridID/Themes/Controls/NavRailItem.axaml"/>
+  </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

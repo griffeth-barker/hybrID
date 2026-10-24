@@ -1,0 +1,27 @@
+<c:OverlayDialog xmlns="https://github.com/avaloniaui"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:c="using:HybridID.Controls"
+                 x:Class="HybridID.Views.Dialogs.DeviceCodeDialog"
+                 Width="460"
+                 Title="Sign in to Microsoft Graph"
+                 PrimaryButtonText="Copy code and open browser"
+                 CloseButtonText="Hide"
+                 DefaultButton="Primary">
+  <!-- PLACEHOLDER (Phase 1/2): minimal but working. Phase 3 builds the numbered steps, expiry
+       countdown and waiting line per spec section 5.4.2. -->
+  <StackPanel Spacing="12">
+    <TextBlock x:Name="UriText" Classes="body" TextWrapping="Wrap"/>
+    <Border Classes="card" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" MinHeight="64">
+      <SelectableTextBlock x:Name="CodeText"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           TextWrapping="Wrap"
+                           FontFamily="{DynamicResource FontFamilyMono}"
+                           FontSize="28" FontWeight="SemiBold" LetterSpacing="2"/>
+    </Border>
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <c:ProgressRing x:Name="WaitingRing" Width="16" Height="16"/>
+      <TextBlock Classes="body secondary" Text="Waiting for you to finish signing in…"
+                 AutomationProperties.LiveSetting="Polite"/>
+    </StackPanel>
+  </StackPanel>
+</c:OverlayDialog>

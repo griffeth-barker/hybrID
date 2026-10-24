@@ -1,0 +1,72 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:HybridID.Controls"
+        x:Class="HybridID.Views.MainWindow"
+        Title="hybrID"
+        Icon="avares://HybridID/Assets/hybrid-icon.png"
+        Width="1120" Height="780"
+        MinWidth="640" MinHeight="560"
+        WindowStartupLocation="CenterScreen"
+        Background="Transparent"
+        TransparencyBackgroundFallback="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+        Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+  <!-- Shell (docs/design/ui-spec.md sections 2.1, 4). Background stays Transparent so Mica /
+       vibrancy shows through the title bar and nav pane; TransparencyBackgroundFallback paints
+       the solid base where no backdrop is available. -->
+  <Grid x:Name="RootGrid" RowDefinitions="Auto,*">
+    <c:AppTitleBar x:Name="TitleBar" Grid.Row="0"/>
+
+    <SplitView x:Name="NavSplitView" Grid.Row="1"
+               DisplayMode="CompactInline"
+               CompactPaneLength="48"
+               OpenPaneLength="240"
+               PaneBackground="Transparent"
+               IsPaneOpen="True">
+      <SplitView.Pane>
+        <DockPanel x:Name="NavPane"
+                   AutomationProperties.LandmarkType="Navigation"
+                   AutomationProperties.Name="Main navigation">
+          <StackPanel DockPanel.Dock="Bottom" Margin="0,0,0,4">
+            <RadioButton x:Name="NavAbout" GroupName="NavRail"
+                         Theme="{DynamicResource NavRailItemTheme}"
+                         Tag="{DynamicResource Icon.Info20}"
+                         Content="About"
+                         AutomationProperties.Name="About"/>
+            <RadioButton x:Name="NavSettings" GroupName="NavRail"
+                         Theme="{DynamicResource NavRailItemTheme}"
+                         Tag="{DynamicResource Icon.Settings}"
+                         Content="Settings"
+                         AutomationProperties.Name="Settings"/>
+          </StackPanel>
+          <StackPanel Margin="0,4,0,0">
+            <RadioButton x:Name="NavSearch" GroupName="NavRail"
+                         Theme="{DynamicResource NavRailItemTheme}"
+                         Tag="{DynamicResource Icon.Search}"
+                         Content="Search"
+                         IsChecked="True"
+                         AutomationProperties.Name="Search"/>
+          </StackPanel>
+        </DockPanel>
+      </SplitView.Pane>
+
+      <Border x:Name="ContentFrame" Classes="contentFrame" ClipToBounds="True">
+        <Grid>
+          <TransitioningContentControl x:Name="PageHost"
+                                       AutomationProperties.LandmarkType="Main"/>
+          <c:ToastHost x:Name="Toasts"/>
+        </Grid>
+      </Border>
+    </SplitView>
+
+    <!-- Screen-reader live region (spec section 10). Visually hidden, not collapsed, so UIA/AX
+         still expose it. -->
+    <TextBlock x:Name="Announcer" Grid.Row="0"
+               Width="1" Height="1"
+               Opacity="0"
+               IsHitTestVisible="False"
+               HorizontalAlignment="Left" VerticalAlignment="Top"
+               AutomationProperties.LiveSetting="Polite"/>
+
+    <c:OverlayHost x:Name="Overlay" Grid.Row="0" Grid.RowSpan="2" ZIndex="100"/>
+  </Grid>
+</Window>

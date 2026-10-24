@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="HybridID.Controls.ToastHost"
+             IsHitTestVisible="False"
+             HorizontalAlignment="Center"
+             VerticalAlignment="Bottom"
+             Margin="0,0,0,16">
+  <Border x:Name="Toast"
+          Classes="toast"
+          IsVisible="False"
+          Opacity="0"
+          RenderTransform="translateY(8px)"
+          MaxWidth="400"
+          Padding="12,8"
+          CornerRadius="{DynamicResource OverlayCornerRadius}"
+          Background="{DynamicResource SolidBackgroundFillColorQuarternaryBrush}"
+          BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
+          BorderThickness="1"
+          BoxShadow="{DynamicResource ShadowFlyout}">
+    <Border.Transitions>
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.167" Easing="0,0,0,1"/>
+        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.167" Easing="0,0,0,1"/>
+      </Transitions>
+    </Border.Transitions>
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <PathIcon x:Name="ToastIcon" Width="16" Height="16" VerticalAlignment="Top" Margin="0,2,0,0"/>
+      <TextBlock x:Name="ToastText" Classes="body" TextWrapping="Wrap" MaxWidth="350"
+                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+    </StackPanel>
+  </Border>
+
+  <UserControl.Styles>
+    <Style Selector="Border.toast.success PathIcon#ToastIcon">
+      <Setter Property="Data" Value="{DynamicResource Icon.CheckCircle}"/>
+      <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+    </Style>
+    <Style Selector="Border.toast.info PathIcon#ToastIcon">
+      <Setter Property="Data" Value="{DynamicResource Icon.Info}"/>
+      <Setter Property="Foreground" Value="{DynamicResource SystemFillColorAttentionBrush}"/>
+    </Style>
+    <Style Selector="Border.toast.error PathIcon#ToastIcon">
+      <Setter Property="Data" Value="{DynamicResource Icon.Error}"/>
+      <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+    </Style>
+  </UserControl.Styles>
+</UserControl>

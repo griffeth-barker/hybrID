@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="HybridID.Views.Pages.SearchPage">
+  <!-- PLACEHOLDER (Phase 1/2): replaced by the full page in a later phase. -->
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="{DynamicResource PagePadding}"
+                MaxWidth="1200"
+                HorizontalAlignment="Stretch"
+                Spacing="8">
+      <TextBlock Classes="title" Text="Search" AutomationProperties.HeadingLevel="1"/>
+      <TextBlock Classes="body secondary" TextWrapping="Wrap"
+                 Text="The search page is being implemented (spec section 5.1, Phase 4)."/>
+        <TextBox x:Name="TxtSearch"
+                 Height="40"
+                 MaxWidth="640"
+                 HorizontalAlignment="Stretch"
+                 VerticalContentAlignment="Center"
+                 PlaceholderText="Search by sAMAccountName, UPN, or ObjectGUID"
+                 AutomationProperties.Name="Identity to search"/>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

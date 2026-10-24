@@ -1,0 +1,126 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="using:HybridID.Controls">
+  <!-- SettingsCard (docs/design/ui-spec.md section 6.12; CommunityToolkit metrics) -->
+  <ControlTheme x:Key="{x:Type c:SettingsCard}" TargetType="c:SettingsCard">
+    <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="{DynamicResource CardCornerRadius}"/>
+    <Setter Property="Padding" Value="16"/>
+    <Setter Property="MinHeight" Value="68"/>
+    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+    <Setter Property="HorizontalContentAlignment" Value="Right"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+    <Setter Property="Focusable" Value="False"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border x:Name="PART_Root"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                Padding="{TemplateBinding Padding}"
+                MinHeight="{TemplateBinding MinHeight}">
+          <Border.Transitions>
+            <Transitions>
+              <BrushTransition Property="Background" Duration="0:0:0.083"/>
+            </Transitions>
+          </Border.Transitions>
+          <Grid ColumnDefinitions="Auto,*,Auto,Auto" RowDefinitions="Auto,Auto">
+            <PathIcon x:Name="PART_HeaderIcon"
+                      Width="20" Height="20"
+                      Margin="2,0,20,0"
+                      VerticalAlignment="Center"
+                      Data="{TemplateBinding HeaderIcon}"
+                      IsVisible="{TemplateBinding HeaderIcon, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+              <TextBlock x:Name="PART_Header"
+                         Classes="body"
+                         Text="{TemplateBinding Header}"
+                         TextWrapping="Wrap"
+                         IsVisible="{TemplateBinding Header, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+              <ContentPresenter x:Name="PART_Description"
+                                Content="{TemplateBinding Description}"
+                                IsVisible="{TemplateBinding Description, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                FontFamily="{DynamicResource FontFamilySmall}"
+                                FontSize="12"
+                                LineHeight="16"
+                                TextWrapping="Wrap"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+            </StackPanel>
+            <ContentPresenter x:Name="PART_ContentPresenter" Grid.Column="2"
+                              Margin="24,0,0,0"
+                              MinWidth="120"
+                              HorizontalAlignment="Right"
+                              VerticalAlignment="Center"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+            <PathIcon x:Name="PART_ActionIcon" Grid.Column="3"
+                      Width="16" Height="16"
+                      Margin="12,0,0,0"
+                      VerticalAlignment="Center"
+                      IsVisible="False"
+                      Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <!-- Content wraps below the text when narrower than 476 px. -->
+    <Style Selector="^:wrapped /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Grid.Row" Value="1"/>
+      <Setter Property="Grid.Column" Value="1"/>
+      <Setter Property="Grid.ColumnSpan" Value="2"/>
+      <Setter Property="Margin" Value="0,12,0,0"/>
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    </Style>
+
+    <Style Selector="^:clickable">
+      <Setter Property="Cursor" Value="Arrow"/>
+    </Style>
+    <Style Selector="^:clickable:pointerover /template/ Border#PART_Root">
+      <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+    </Style>
+    <Style Selector="^:clickable:pressed /template/ Border#PART_Root">
+      <Setter Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}"/>
+    </Style>
+
+    <Style Selector="^:disabled /template/ TextBlock#PART_Header">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}"/>
+    </Style>
+    <Style Selector="^:disabled /template/ ContentPresenter#PART_Description">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}"/>
+    </Style>
+    <Style Selector="^:disabled /template/ PathIcon#PART_HeaderIcon">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}"/>
+    </Style>
+
+    <!-- Rows inside an Expander.settings: flush, divider on top except the first row. -->
+    <Style Selector="^.nested">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
+      <Setter Property="BorderThickness" Value="0,1,0,0"/>
+      <Setter Property="CornerRadius" Value="0"/>
+      <Setter Property="Padding" Value="58,8,48,8"/>
+      <Setter Property="MinHeight" Value="52"/>
+    </Style>
+    <Style Selector="^.nested:nth-child(1)">
+      <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+
+    <!-- Used as an Expander.settings header: the expander supplies chrome and padding. -->
+    <Style Selector="^.header">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="CornerRadius" Value="0"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="MinHeight" Value="0"/>
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>

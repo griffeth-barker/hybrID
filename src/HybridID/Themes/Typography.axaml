@@ -1,0 +1,92 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!--
+    Type ramp (docs/design/ui-spec.md section 3.2). Selectors use :is(TextBlock) so
+    SelectableTextBlock matches too. "body" is the inherited default (14/20 via
+    ControlContentThemeFontSize) and is intentionally NOT applied to every TextBlock globally:
+    that would override inherited sizes inside Fluent templates (tooltips, captions).
+    Size classes first, modifier classes after, so modifiers win when combined.
+  -->
+
+  <Style Selector=":is(TextBlock).caption">
+    <Setter Property="FontSize" Value="12"/>
+    <Setter Property="LineHeight" Value="16"/>
+    <Setter Property="FontWeight" Value="Normal"/>
+    <Setter Property="FontFamily" Value="{DynamicResource FontFamilySmall}"/>
+  </Style>
+  <Style Selector=":is(TextBlock).body">
+    <Setter Property="FontSize" Value="14"/>
+    <Setter Property="LineHeight" Value="20"/>
+    <Setter Property="FontWeight" Value="Normal"/>
+    <Setter Property="FontFamily" Value="{DynamicResource FontFamilyText}"/>
+  </Style>
+  <Style Selector=":is(TextBlock).bodyStrong">
+    <Setter Property="FontSize" Value="14"/>
+    <Setter Property="LineHeight" Value="20"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="FontFamily" Value="{DynamicResource FontFamilyText}"/>
+  </Style>
+  <Style Selector=":is(TextBlock).bodyLarge">
+    <Setter Property="FontSize" Value="18"/>
+    <Setter Property="LineHeight" Value="24"/>
+    <Setter Property="FontWeight" Value="Normal"/>
+    <Setter Property="FontFamily" Value="{DynamicResource FontFamilyDisplay}"/>
+  </Style>
+  <Style Selector=":is(TextBlock).subtitle">
+    <Setter Property="FontSize" Value="20"/>
+    <Setter Property="LineHeight" Value="28"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="FontFamily" Value="{DynamicResource FontFamilyDisplay}"/>
+  </Style>
+  <Style Selector=":is(TextBlock).title">
+    <Setter Property="FontSize" Value="28"/>
+    <Setter Property="LineHeight" Value="36"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="FontFamily" Value="{DynamicResource FontFamilyDisplay}"/>
+  </Style>
+  <Style Selector=":is(TextBlock).titleLarge">
+    <Setter Property="FontSize" Value="40"/>
+    <Setter Property="LineHeight" Value="52"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="FontFamily" Value="{DynamicResource FontFamilyDisplay}"/>
+  </Style>
+  <Style Selector=":is(TextBlock).display">
+    <Setter Property="FontSize" Value="68"/>
+    <Setter Property="LineHeight" Value="92"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="FontFamily" Value="{DynamicResource FontFamilyDisplay}"/>
+  </Style>
+
+  <!-- Modifiers (combine with a size class). -->
+  <Style Selector=":is(TextBlock).primary">
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+  </Style>
+  <Style Selector=":is(TextBlock).secondary">
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+  </Style>
+  <Style Selector=":is(TextBlock).tertiary">
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}"/>
+  </Style>
+  <Style Selector=":is(TextBlock).accent">
+    <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+  </Style>
+  <!-- Semantic text colors: only for short status lines (validation, test results, errors). -->
+  <Style Selector=":is(TextBlock).success">
+    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+  </Style>
+  <Style Selector=":is(TextBlock).caution">
+    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}"/>
+  </Style>
+  <Style Selector=":is(TextBlock).critical">
+    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+  </Style>
+  <Style Selector=":is(TextBlock).mono">
+    <Setter Property="FontFamily" Value="{DynamicResource FontFamilyMono}"/>
+    <Setter Property="FontSize" Value="13"/>
+    <Setter Property="LineHeight" Value="20"/>
+  </Style>
+  <Style Selector="TextBox.mono">
+    <Setter Property="FontFamily" Value="{DynamicResource FontFamilyMono}"/>
+    <Setter Property="FontSize" Value="13"/>
+  </Style>
+</Styles>

@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="HybridID.Controls.OverlayHost"
+             IsVisible="False"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch">
+  <Panel>
+    <!-- Smoke: consumes all pointer input (no light dismiss). No ElementRole, so the title bar
+         underneath is not draggable while a dialog is open (intended). -->
+    <Border x:Name="Smoke"
+            Background="{DynamicResource SmokeFillColorDefaultBrush}"
+            Opacity="0">
+      <Border.Transitions>
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.167" Easing="0,0,0,1"/>
+        </Transitions>
+      </Border.Transitions>
+    </Border>
+    <Panel x:Name="DialogLayer" Margin="24"/>
+  </Panel>
+</UserControl>
