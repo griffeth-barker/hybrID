@@ -18,6 +18,12 @@ cd src/HybridID && dotnet build
 # Run from source
 dotnet run --project src/HybridID
 
+# Run with sample data instead of AD/Graph (Search page design review; also HYBRID_PREVIEW=1)
+dotnet run --project src/HybridID -- --preview
+
+# Render preview-mode screenshots headlessly, Light + Dark (default out: ./screenshots)
+dotnet run --project tools/HybridID.Screenshots -- <outDir> [w=640] [identity ...]
+
 # Publish self-contained single-file binaries for all platforms (or -Rid <one>)
 pwsh build/build.ps1
 ```
