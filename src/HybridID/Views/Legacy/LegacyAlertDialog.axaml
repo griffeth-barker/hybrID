@@ -1,0 +1,16 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="HybridID.Views.Legacy.LegacyAlertDialog"
+        Title="hybrID"
+        Width="380" SizeToContent="Height"
+        Background="{DynamicResource PanelBg}"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Icon="avares://HybridID/Assets/hybrid-icon.png">
+    <Grid Margin="25" RowDefinitions="Auto,Auto">
+        <TextBlock Name="MessageText" Grid.Row="0" Foreground="{DynamicResource PrimaryText}" FontSize="14"
+                   TextWrapping="Wrap" Margin="0,0,0,20"/>
+        <Button Name="BtnOk" Grid.Row="1" Content="OK" HorizontalAlignment="Right"
+                Background="{DynamicResource AccentBrush}" Foreground="White" Padding="25,8" Classes="accent"/>
+    </Grid>
+</Window>

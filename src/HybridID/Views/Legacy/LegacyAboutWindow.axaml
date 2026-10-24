@@ -1,0 +1,25 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="HybridID.Views.Legacy.LegacyAboutWindow"
+        Title="About"
+        Width="380" Height="260"
+        Background="{DynamicResource PanelBg}"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Icon="avares://HybridID/Assets/hybrid-icon.png">
+    <Grid Margin="25" RowDefinitions="*,Auto">
+        <StackPanel Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <TextBlock Name="VersionText" Text="hybrID" FontSize="18" FontWeight="Bold"
+                       Foreground="{DynamicResource PrimaryText}" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+            <TextBlock Text="Griffeth Barker 2026" FontSize="14" Foreground="{DynamicResource SecondaryText}"
+                       HorizontalAlignment="Center" Margin="0,0,0,5"/>
+            <TextBlock Text="Open Source under the MIT license" FontSize="14" Foreground="{DynamicResource SecondaryText}"
+                       HorizontalAlignment="Center" Margin="0,0,0,15"/>
+            <TextBlock Name="LnkGitHub" Text="https://github.com/griffeth-barker/hybrID" FontSize="14"
+                       HorizontalAlignment="Center" Classes="hyperlink"/>
+        </StackPanel>
+
+        <Button Name="BtnClose" Grid.Row="1" Content="Close" HorizontalAlignment="Center"
+                Background="{DynamicResource AccentBrush}" Foreground="White" Padding="25,8" Classes="accent" Margin="0,15,0,0"/>
+    </Grid>
+</Window>

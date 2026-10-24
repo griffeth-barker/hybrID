@@ -1,3 +1,9 @@
-# Ignore the releases directory that is used for temporary export of the wrapped script
-releases
-releases/*
+# .NET build output
+bin/
+obj/
+build/releases/
+
+# User-specific files
+*.user
+.vs/
+.vscode/

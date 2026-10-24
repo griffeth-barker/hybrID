@@ -1,0 +1,86 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="HybridID.Views.Legacy.LegacySettingsWindow"
+        Title="Configuration"
+        Width="580" Height="500"
+        Background="{DynamicResource PanelBg}"
+        WindowStartupLocation="CenterOwner"
+        Icon="avares://HybridID/Assets/hybrid-icon.png">
+    <Grid Margin="25" RowDefinitions="*,Auto">
+        <TabControl Grid.Row="0">
+            <TabItem Header="Exchange">
+                <StackPanel Margin="0,15,0,0">
+                    <TextBlock Text="Exchange Environment" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource PrimaryText}" Margin="0,0,0,15"/>
+                    <Grid ColumnDefinitions="200,*" RowDefinitions="Auto">
+                        <TextBlock Grid.Column="0" Text="On-Premises Exchange FQDN" Foreground="{DynamicResource PrimaryText}" VerticalAlignment="Center"/>
+                        <TextBox Name="CfgFqdn" Grid.Column="1"/>
+                    </Grid>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="Active Directory">
+                <StackPanel Margin="0,15,0,0">
+                    <TextBlock Text="Active Directory (LDAP)" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource PrimaryText}" Margin="0,0,0,15"/>
+                    <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="0,0,0,5">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Server" Foreground="{DynamicResource PrimaryText}" VerticalAlignment="Center" Margin="0,0,10,10"/>
+                        <TextBox Name="CfgLdapServer" Grid.Row="0" Grid.Column="1" PlaceholderText="dc01.domain.tld" Margin="0,0,0,10"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Port" Foreground="{DynamicResource PrimaryText}" VerticalAlignment="Center" Margin="0,0,10,10"/>
+                        <TextBox Name="CfgLdapPort" Grid.Row="1" Grid.Column="1" PlaceholderText="636" Margin="0,0,0,10"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Encryption" Foreground="{DynamicResource PrimaryText}" VerticalAlignment="Center" Margin="0,0,10,10"/>
+                        <ComboBox Name="CmbLdapEncryption" Grid.Row="2" Grid.Column="1" Margin="0,0,0,10" HorizontalAlignment="Stretch">
+                            <ComboBoxItem Content="LDAPS (recommended)"/>
+                            <ComboBoxItem Content="StartTLS (Windows only)"/>
+                            <ComboBoxItem Content="None (insecure - lab use only)"/>
+                        </ComboBox>
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Base DN" Foreground="{DynamicResource PrimaryText}" VerticalAlignment="Center" Margin="0,0,10,10"/>
+                        <TextBox Name="CfgLdapBaseDn" Grid.Row="3" Grid.Column="1" PlaceholderText="Blank = auto-discover from server" Margin="0,0,0,10"/>
+
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text=""/>
+                        <CheckBox Name="ChkLdapSkipCert" Grid.Row="4" Grid.Column="1" Content="Skip certificate validation (self-signed labs only)"
+                                  ToolTip.Tip="Windows only. On macOS/Linux, set LDAPTLS_REQCERT=never in the environment before launching hybrID instead - see docs/getting-started.md."/>
+                    </Grid>
+
+                    <Button Name="BtnTestLdap" Content="Test Connection" Background="{DynamicResource AccentBrush}" Foreground="White"
+                            Classes="accent" HorizontalAlignment="Left" Margin="0,10,0,10"/>
+                    <TextBlock Name="TxtLdapTestStatus" Foreground="{DynamicResource SecondaryText}" TextWrapping="Wrap"/>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="Microsoft Graph">
+                <StackPanel Margin="0,15,0,0">
+                    <TextBlock Text="Microsoft Graph" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource PrimaryText}" Margin="0,0,0,15"/>
+                    <Grid ColumnDefinitions="200,*" RowDefinitions="Auto">
+                        <TextBlock Grid.Column="0" Text="Tenant ID" Foreground="{DynamicResource PrimaryText}" VerticalAlignment="Center"/>
+                        <TextBox Name="CfgGraphTenant" Grid.Column="1" PlaceholderText="organizations, common, or a tenant GUID"/>
+                    </Grid>
+
+                    <Button Name="BtnTestGraph" Content="Test Connection" Background="{DynamicResource AccentBrush}" Foreground="White"
+                            Classes="accent" HorizontalAlignment="Left" Margin="0,15,0,10"/>
+                    <TextBlock Name="TxtGraphTestStatus" Foreground="{DynamicResource SecondaryText}" TextWrapping="Wrap"/>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="Appearance">
+                <StackPanel Margin="0,15,0,0">
+                    <TextBlock Text="Application Appearance" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource PrimaryText}" Margin="0,0,0,15"/>
+                    <Grid ColumnDefinitions="200,*" RowDefinitions="Auto">
+                        <TextBlock Grid.Column="0" Text="Theme" Foreground="{DynamicResource PrimaryText}" VerticalAlignment="Center"/>
+                        <ComboBox Name="CmbTheme" Grid.Column="1" HorizontalAlignment="Stretch">
+                            <ComboBoxItem Content="System"/>
+                            <ComboBoxItem Content="Light"/>
+                            <ComboBoxItem Content="Dark"/>
+                        </ComboBox>
+                    </Grid>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+            <Button Name="BtnCancel" Content="Cancel" Background="{DynamicResource MutedBrush}" Foreground="White" Margin="0,0,10,0" Classes="accent"/>
+            <Button Name="BtnApply" Content="Apply" Background="{DynamicResource AccentBrush}" Foreground="White" Classes="accent"/>
+        </StackPanel>
+    </Grid>
+</Window>

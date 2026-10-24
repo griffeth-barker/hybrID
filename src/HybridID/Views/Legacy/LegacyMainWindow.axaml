@@ -1,0 +1,125 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="HybridID.Views.Legacy.LegacyMainWindow"
+        Title="hybrID"
+        Width="720" Height="680"
+        Background="{DynamicResource WindowBg}"
+        WindowStartupLocation="CenterScreen"
+        Icon="avares://HybridID/Assets/hybrid-icon.png">
+
+    <Grid RowDefinitions="*,Auto">
+
+        <Grid Grid.Row="0" Margin="25" RowDefinitions="Auto,Auto,*">
+
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                <TextBlock Text="Identity" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryText}"/>
+                <Border Width="18" Height="18" CornerRadius="9" Background="{DynamicResource AccentBrush}" Margin="10,0,0,0" Cursor="Help"
+                        ToolTip.Tip="Acceptable Formats:&#10;&#8226; sAMAccountName (e.g., jsmith)&#10;&#8226; UPN (e.g., jsmith@domain.com)&#10;&#8226; ObjectGUID (e.g., 12345678-1234-...)&#10;&#10;Shortcuts: Ctrl/Cmd+L to focus search, Escape to clear.">
+                    <TextBlock Text="i" Foreground="White" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+            </StackPanel>
+
+            <Grid Grid.Row="1" Margin="0,0,0,15" ColumnDefinitions="*,Auto">
+                <TextBox Name="TxtSearch" Grid.Column="0" Margin="0,0,15,0" VerticalContentAlignment="Center" PlaceholderText="sAMAccountName, UPN, or ObjectGUID"/>
+                <Button Name="BtnSearch" Grid.Column="1" Content="Locate" Width="130" Classes="accent" Background="{DynamicResource AccentBrush}" Foreground="White"/>
+            </Grid>
+
+            <ScrollViewer Grid.Row="2">
+                <Grid>
+                    <!-- Ambiguous-match picker: shown instead of the detail panel when more than one object matched. -->
+                    <Border Name="AmbiguousPanel" IsVisible="False" Background="{DynamicResource PanelBg}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="15">
+                        <StackPanel>
+                            <TextBlock Text="Multiple matches found - select one to continue:" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryText}" Margin="0,0,0,10"/>
+                            <StackPanel Name="CandidateListPanel" Spacing="6"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Result detail panel. -->
+                    <Border Name="DetailPanel" Background="{DynamicResource PanelBg}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="15">
+                        <StackPanel>
+
+                            <StackPanel Name="BadgeRow" Orientation="Horizontal" Margin="0,0,0,15">
+                                <Border Name="SyncBadge" CornerRadius="10" Padding="10,3" Margin="0,0,8,0" IsVisible="False">
+                                    <TextBlock Name="SyncBadgeText" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                                </Border>
+                                <Border Name="AccountBadge" CornerRadius="10" Padding="10,3" IsVisible="False">
+                                    <TextBlock Name="AccountBadgeText" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                                </Border>
+                            </StackPanel>
+
+                            <TextBlock Text="Identity" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource SecondaryText}" Margin="0,0,0,8"/>
+                            <Grid ColumnDefinitions="170,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Object Name" Margin="0,0,0,12" Foreground="{DynamicResource SecondaryText}"/>
+                                <TextBox Name="ValName" Grid.Row="0" Grid.Column="1" IsReadOnly="True" Margin="0,0,10,12" Background="{DynamicResource WindowBg}"/>
+                                <Button Name="BtnCopyName" Grid.Row="0" Grid.Column="2" Content="Copy" Classes="chrome" Margin="0,0,0,12" ToolTip.Tip="Copy object name"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Object Class" Margin="0,0,0,12" Foreground="{DynamicResource SecondaryText}"/>
+                                <TextBox Name="ValClass" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" IsReadOnly="True" Margin="0,0,0,12" Background="{DynamicResource WindowBg}"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Password" Margin="0,0,0,12" Foreground="{DynamicResource SecondaryText}"/>
+                                <TextBox Name="ValPassword" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" IsReadOnly="True" Margin="0,0,0,12" Background="{DynamicResource WindowBg}"/>
+
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Identity Management" Foreground="{DynamicResource SecondaryText}"/>
+                                <TextBlock Name="TxtManageIdentity" Grid.Row="3" Grid.Column="1" Margin="5,0,10,0" Foreground="{DynamicResource SecondaryText}" VerticalAlignment="Center"/>
+                                <Button Name="BtnCopyManageIdentity" Grid.Row="3" Grid.Column="2" Content="Copy Link" Classes="chrome" ToolTip.Tip="Copy management link"/>
+                            </Grid>
+
+                            <Border Height="1" Background="{DynamicResource AppBorderBrush}" Margin="0,15"/>
+
+                            <TextBlock Text="Mail" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource SecondaryText}" Margin="0,0,0,8"/>
+                            <Grid ColumnDefinitions="170,*,Auto" RowDefinitions="Auto,Auto,Auto">
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Notes" VerticalAlignment="Top" Margin="0,5,0,12" Foreground="{DynamicResource SecondaryText}"/>
+                                <TextBox Name="ValNotes" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" IsReadOnly="True" TextWrapping="Wrap" Background="{DynamicResource WindowBg}" Foreground="{DynamicResource NotesText}" Margin="0,0,0,12"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Proxy Addresses" VerticalAlignment="Top" Margin="0,5,0,12" Foreground="{DynamicResource SecondaryText}"/>
+                                <TextBox Name="ValProxyAddresses" Grid.Row="1" Grid.Column="1" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" MaxHeight="90" Background="{DynamicResource WindowBg}" Margin="0,0,10,12"/>
+                                <Button Name="BtnCopyProxyAddresses" Grid.Row="1" Grid.Column="2" Content="Copy" Classes="chrome" VerticalAlignment="Top" Margin="0,0,0,12" ToolTip.Tip="Copy proxy addresses"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Mail Management" Foreground="{DynamicResource SecondaryText}"/>
+                                <TextBlock Name="TxtManageExchange" Grid.Row="2" Grid.Column="1" Margin="5,0,10,0" Foreground="{DynamicResource SecondaryText}" VerticalAlignment="Center"/>
+                                <Button Name="BtnCopyManageExchange" Grid.Row="2" Grid.Column="2" Content="Copy Link" Classes="chrome" ToolTip.Tip="Copy management link"/>
+                            </Grid>
+
+                            <Border Name="SyncSectionDivider" Height="1" Background="{DynamicResource AppBorderBrush}" Margin="0,15" IsVisible="False"/>
+                            <StackPanel Name="SyncSection" IsVisible="False">
+                                <TextBlock Text="Sync" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource SecondaryText}" Margin="0,0,0,8"/>
+                                <Grid ColumnDefinitions="170,*">
+                                    <TextBlock Grid.Column="0" Text="Last Synced to Entra ID" Foreground="{DynamicResource SecondaryText}"/>
+                                    <TextBox Name="ValLastSynced" Grid.Column="1" IsReadOnly="True" Background="{DynamicResource WindowBg}"/>
+                                </Grid>
+                            </StackPanel>
+
+                            <Border Height="1" Background="{DynamicResource AppBorderBrush}" Margin="0,15"/>
+                            <Expander Name="DetailsExpander" Header="Groups &amp; Licenses">
+                                <Grid ColumnDefinitions="170,*" RowDefinitions="Auto,Auto,Auto" Margin="0,10,0,0">
+                                    <TextBlock Name="LblGroupType" Grid.Row="0" Grid.Column="0" Text="Group Type" Margin="0,0,0,12" Foreground="{DynamicResource SecondaryText}" IsVisible="False"/>
+                                    <TextBox Name="ValGroupType" Grid.Row="0" Grid.Column="1" IsReadOnly="True" Margin="0,0,0,12" Background="{DynamicResource WindowBg}" IsVisible="False"/>
+
+                                    <TextBlock Name="LblMemberCount" Grid.Row="1" Grid.Column="0" Text="Member Count" Margin="0,0,0,12" Foreground="{DynamicResource SecondaryText}" IsVisible="False"/>
+                                    <TextBox Name="ValMemberCount" Grid.Row="1" Grid.Column="1" IsReadOnly="True" Margin="0,0,0,12" Background="{DynamicResource WindowBg}" IsVisible="False"/>
+
+                                    <TextBlock Name="LblLicenses" Grid.Row="2" Grid.Column="0" Text="Licenses" VerticalAlignment="Top" Margin="0,5,0,0" Foreground="{DynamicResource SecondaryText}" IsVisible="False"/>
+                                    <TextBox Name="ValLicenses" Grid.Row="2" Grid.Column="1" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" MaxHeight="90" Background="{DynamicResource WindowBg}" IsVisible="False"/>
+                                </Grid>
+                            </Expander>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </ScrollViewer>
+        </Grid>
+
+        <Border Name="StatusBarBorder" Grid.Row="1" Background="{DynamicResource StatusBarBg}" Padding="10,5">
+            <Grid ColumnDefinitions="*,Auto,Auto">
+                <TextBlock Name="TxtStatus" Grid.Column="0" Text="Initializing..." Foreground="White" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+
+                <Button Name="BtnSettings" Grid.Column="1" Classes="chrome" ToolTip.Tip="Settings &amp; Configuration">
+                    <TextBlock Text="&#9881;" FontSize="14" Foreground="White"/>
+                </Button>
+
+                <Button Name="BtnAbout" Grid.Column="2" Classes="chrome" ToolTip.Tip="About hybrID" Margin="4,0,0,0">
+                    <TextBlock Text="&#8505;" FontSize="14" Foreground="White"/>
+                </Button>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
