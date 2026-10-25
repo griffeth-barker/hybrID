@@ -10,16 +10,17 @@ This document outlines the potential features, enhancements, and architectural g
 - [x] **Modular Architecture:** Split the monolithic script into a standard public/private PowerShell module structure.
 - [x] **Frictionless Auth:** Cache Microsoft Graph tokens to eliminate repetitive login prompts.
 - [x] **Native .NET Rewrite:** Transitioned from PowerShell/WPF (Windows-only) to a compiled C#/Avalonia application running natively on Windows, macOS, and Linux.
+- [x] **UI Redesign:** Windows 11-style single-window interface with verdict cards, search coverage reporting, in-window settings, and keyboard shortcuts (0.3.0).
 
 ## Short-Term Enhancements
 These are quick-win features designed to immediately improve the day-to-day quality of life for helpdesk technicians.
-- [ ] **"Copy to Clipboard" Button:** Add a quick-copy button that formats the search results into a clean text block, making it easy to paste into a ticketing system (e.g., ServiceNow, Jira).
+- [x] **"Copy to Clipboard" Button:** Add a quick-copy button that formats the search results into a clean text block, making it easy to paste into a ticketing system (e.g., ServiceNow, Jira).
 - [ ] **Expanded Object Support:** Improve handling for Shared Mailboxes, Equipment/Room Mailboxes, and Microsoft 365 Groups.
 - [ ] **Graceful Error Logging:** Implement a hidden `logs\` directory that silently records Graph API timeouts or Active Directory connection failures for easier debugging.
 
 ## Medium-Term Goals
 These features will require adding new capabilities to the UI and expanding our module dependencies.
-- [ ] **M365 License Detection:** Leverage Graph API to display exactly which M365 licenses are currently assigned to the located user.
+- [x] **M365 License Detection:** Leverage Graph API to display exactly which M365 licenses are currently assigned to the located user.
 - [ ] **Last Sign-In Data:** Surface the user's `LastSignInDateTime` from Entra ID directly in the notes field to help techs instantly spot inactive or disabled accounts.
 - [ ] **Bulk Search Capabilities:** Add a method of bulk searching.
 

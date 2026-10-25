@@ -228,17 +228,6 @@
       <SolidColorBrush x:Key="SystemControlFocusVisualPrimaryBrush" Color="#E4000000"/>
       <SolidColorBrush x:Key="SystemControlFocusVisualSecondaryBrush" Color="#B3FFFFFF"/>
 
-      <!-- LEGACY: delete with Views/Legacy (Phase 7) -->
-      <SolidColorBrush x:Key="WindowBg" Color="#F3F3F3"/>
-      <SolidColorBrush x:Key="PanelBg" Color="#FFFFFF"/>
-      <SolidColorBrush x:Key="InputBg" Color="#FFFFFF"/>
-      <SolidColorBrush x:Key="AppBorderBrush" Color="#CCCCCC"/>
-      <SolidColorBrush x:Key="PrimaryText" Color="#000000"/>
-      <SolidColorBrush x:Key="SecondaryText" Color="#555555"/>
-      <SolidColorBrush x:Key="NotesText" Color="#006600"/>
-      <SolidColorBrush x:Key="LinkText" Color="#0066CC"/>
-      <SolidColorBrush x:Key="StatusBarBg" Color="#007ACC"/>
-      <!-- END LEGACY -->
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
 
@@ -460,17 +449,6 @@
       <SolidColorBrush x:Key="SystemControlFocusVisualPrimaryBrush" Color="#FFFFFF"/>
       <SolidColorBrush x:Key="SystemControlFocusVisualSecondaryBrush" Color="#B3000000"/>
 
-      <!-- LEGACY: delete with Views/Legacy (Phase 7) -->
-      <SolidColorBrush x:Key="WindowBg" Color="#1E1E1E"/>
-      <SolidColorBrush x:Key="PanelBg" Color="#252526"/>
-      <SolidColorBrush x:Key="InputBg" Color="#2D2D30"/>
-      <SolidColorBrush x:Key="AppBorderBrush" Color="#3F3F46"/>
-      <SolidColorBrush x:Key="PrimaryText" Color="#FFFFFF"/>
-      <SolidColorBrush x:Key="SecondaryText" Color="#CCCCCC"/>
-      <SolidColorBrush x:Key="NotesText" Color="#DCDCAA"/>
-      <SolidColorBrush x:Key="LinkText" Color="#569CD6"/>
-      <SolidColorBrush x:Key="StatusBarBg" Color="#007ACC"/>
-      <!-- END LEGACY -->
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
@@ -501,19 +479,4 @@
   <Thickness x:Key="SystemControlFocusVisualPrimaryThickness">2</Thickness>
   <Thickness x:Key="SystemControlFocusVisualSecondaryThickness">1</Thickness>
 
-  <!-- LEGACY: delete with Views/Legacy (Phase 7). Theme-invariant legacy keys. -->
-  <SolidColorBrush x:Key="StatusInfoBrush" Color="#CA5100"/>
-  <SolidColorBrush x:Key="StatusSuccessBrush" Color="#16825D"/>
-  <SolidColorBrush x:Key="StatusErrorBrush" Color="#D03E3D"/>
-  <SolidColorBrush x:Key="StatusReadyBrush" Color="#007ACC"/>
-  <SolidColorBrush x:Key="AccentBrush" Color="#007ACC"/>
-  <SolidColorBrush x:Key="MutedBrush" Color="#888888"/>
-  <SolidColorBrush x:Key="SyncOnPremBrush" Color="#6E6E6E"/>
-  <SolidColorBrush x:Key="SyncHybridBrush" Color="#8250DF"/>
-  <SolidColorBrush x:Key="SyncCloudOnlyBrush" Color="#0078D4"/>
-  <SolidColorBrush x:Key="AccountEnabledBrush" Color="#16825D"/>
-  <SolidColorBrush x:Key="AccountDisabledBrush" Color="#6E6E6E"/>
-  <SolidColorBrush x:Key="AccountLockedBrush" Color="#D03E3D"/>
-  <SolidColorBrush x:Key="WarningBrush" Color="#B58900"/>
-  <!-- END LEGACY -->
 </ResourceDictionary>

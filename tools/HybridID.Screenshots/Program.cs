@@ -21,6 +21,9 @@ using HybridID.Views.Pages;
 // "settings-dirty" for staged (unsaved, never written) edits that show the SaveBar, and
 // "dlg-ad", "dlg-ad-busy", "dlg-ad-error", "dlg-code", "dlg-code-expired", "dlg-message",
 // "dlg-confirm" for the overlay dialogs (fake callbacks; nothing connects anywhere).
+// Options apply to the scenarios after them: "h=780" sets the window height (default 2000,
+// dialogs 820), "clean" hides the preview and setup banners (for docs screenshots), and a
+// "searching:" prefix ("searching:jsmith") captures mid-search.
 Environment.SetEnvironmentVariable("HYBRID_PREVIEW", "1");
 
 var outDir = args.Length > 0 ? args[0] : Path.Combine(Directory.GetCurrentDirectory(), "screenshots");
@@ -41,20 +44,42 @@ AppBuilder.Configure<App>()
 foreach (var theme in new[] { "Light", "Dark" })
 {
     double width = 1120;
-    foreach (var scenario in scenarios)
+    double? height = null;
+    var clean = false;
+    foreach (var arg in scenarios)
     {
-        if (scenario.StartsWith("w=", StringComparison.Ordinal))
+        if (arg.StartsWith("w=", StringComparison.Ordinal))
         {
-            width = double.Parse(scenario[2..]);
+            width = double.Parse(arg[2..]);
             continue;
         }
 
+        if (arg.StartsWith("h=", StringComparison.Ordinal))
+        {
+            height = double.Parse(arg[2..]);
+            continue;
+        }
+
+        if (arg == "clean")
+        {
+            clean = true;
+            continue;
+        }
+
+        var midSearch = arg.StartsWith("searching:", StringComparison.Ordinal);
+        var scenario = midSearch ? arg["searching:".Length..] : arg;
         var isDialog = scenario.StartsWith("dlg-", StringComparison.Ordinal);
-        var window = new MainWindow { Width = width, Height = isDialog ? 820 : 2000 };
+        var window = new MainWindow { Width = width, Height = height ?? (isDialog ? 820 : 2000) };
         // After construction: MainWindow applies the user's saved theme.
         ThemeService.Apply(theme);
         window.Show();
         Pump(TimeSpan.FromMilliseconds(300));
+        if (clean)
+        {
+            var search = window.GetVisualDescendants().OfType<SearchPage>().First();
+            search.FindControl<InfoBar>("PreviewBar")!.IsOpen = false;
+            search.FindControl<InfoBar>("SetupBar")!.IsOpen = false;
+        }
 
         var pageName = scenario.TrimEnd('+');
         if (isDialog)
@@ -89,10 +114,10 @@ foreach (var theme in new[] { "Light", "Dark" })
             var page = window.GetVisualDescendants().OfType<SearchPage>().First();
             page.FindControl<TextBox>("TxtSearch")!.Text = scenario;
             page.FindControl<Button>("BtnLocate")!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-            Pump(TimeSpan.FromMilliseconds(2600));
+            Pump(TimeSpan.FromMilliseconds(midSearch ? 400 : 2600));
         }
 
-        var name = $"{Sanitize(scenario)}-{(int)width}-{theme.ToLowerInvariant()}.png";
+        var name = $"{(midSearch ? "searching-" : "")}{Sanitize(scenario)}-{(int)width}-{theme.ToLowerInvariant()}.png";
 #pragma warning disable CS0618 // The options overload adds nothing for a plain PNG.
         window.CaptureRenderedFrame()?.Save(Path.Combine(outDir, name));
 #pragma warning restore CS0618

@@ -28,22 +28,25 @@ dotnet run --project tools/HybridID.Screenshots -- <outDir> [w=640] [identity ..
 pwsh build/build.ps1
 ```
 
-There is no automated test suite yet (see `docs/roadmap.md`). Verify changes by running the app and confirming both Dark and Light themes render correctly; for anything touching `LdapIdentityService`, verify against a real (or disposable Samba) AD DC — LDAP behavior genuinely differs by OS (see Platform Quirks below), so don't assume Windows behavior carries over.
+There is no automated test suite yet (see `docs/roadmap.md`). Verify changes by running the app (or the screenshot tool) and confirming both Dark and Light themes render correctly. Never let an automated/headless run trigger Settings Save: it writes the real per-user config. For UI work, for anything touching `LdapIdentityService`, verify against a real (or disposable Samba) AD DC — LDAP behavior genuinely differs by OS (see Platform Quirks below), so don't assume Windows behavior carries over.
 
 ## Architecture
 
 `src/HybridID/` separates presentation, logic, and data:
 
-- **`Views/*.axaml` + `*.axaml.cs`** — `MainWindow` (search UI), `SettingsWindow`, `AboutWindow`, `AlertDialog` (generic message dialog), `AdCredentialDialog` (LDAP username/password prompt), `DeviceCodeDialog` (Graph device-code sign-in prompt). Plain code-behind, no MVVM framework — this is intentional; don't introduce ReactiveUI/CommunityToolkit.Mvvm. Code-behind orchestrates (call a service, bind results to controls); it should not contain query/routing logic itself.
+- **`Views/`** — `MainWindow` is the only OS window: title bar with AD/Entra status chips, nav rail, cached pages (`Views/Pages/SearchPage`, `SettingsPage`, `AboutPage`), in-window overlay dialogs (`Views/Dialogs/AdCredentialDialog`, `DeviceCodeDialog`, `MessageDialog`) and toasts. Pages talk to the window only through `IAppShell`. `Views/LiveLookupSource` runs real searches for `SearchPage` (it drives the sign-in dialogs, so it lives in Views); `Services/PreviewLookupSource` serves sample data under `--preview`. Plain code-behind, no MVVM framework — this is intentional; don't introduce ReactiveUI/CommunityToolkit.Mvvm. Code-behind orchestrates (call a service, bind results to controls); it should not contain query/routing logic itself.
+- **`Controls/`** — the app's small composite controls (InfoBar, SettingsCard, StatusPill, ResultField/ResultListField, ManagementCard, OverlayDialog/OverlayHost, ProgressRing, CopyButton, ToastHost, AppTitleBar), themed in `Themes/Controls/*.axaml`. No third-party UI libraries.
 - **`Services/*.cs`** — where all logic lives:
   - `LdapIdentityService` — direct LDAP queries via `System.DirectoryServices.Protocols`. No domain join required.
   - `GraphAuthService` / `GraphIdentityService` — Microsoft Graph queries via the official `Microsoft.Graph` C# SDK, device-code auth.
-  - `IdentityLookupService` — orchestrates the two above; contains the actual routing logic (on-prem / hybrid remote-mailbox / cloud-only determination, deep-link URL building). This is the C# port of the original app's `Invoke-Search.ps1` — if you're changing routing behavior, this is the file.
+  - `IdentityLookupService` — orchestrates the two above; contains the actual routing logic (on-prem / hybrid remote-mailbox / cloud-only determination, deep-link URL building). This is the C# port of the original app's `Invoke-Search.ps1` — if you're changing routing behavior, this is the file. Directory failures are returned as `AdError`/`GraphError` on the result, never silently treated as "not found" (that misroutes synced objects).
+  - `AppSession` — shared state for the pages: config, the long-lived LDAP connection, the Graph client and AD/Graph connection state (drives the title-bar chips).
   - `ConfigService` — loads/saves the per-user config file (see below).
   - `ThemeService` — applies Light/Dark/System via Avalonia's `RequestedThemeVariant`.
   - `UrlLauncher` — opens a URL in the OS default browser (`Process.Start` + `UseShellExecute`, works unmodified on all three platforms).
 - **`Models/*.cs`** — plain data types: `AppConfig` (config schema), `AdLookupResult`, `GraphLookupResult`, `IdentityLookupResult`, `ManagementLink`.
-- **`Themes/Theme.axaml`** — the app's palette as an Avalonia `ResourceDictionary` with `Light`/`Dark` `ThemeDictionaries` (`WindowBg`, `PanelBg`, `InputBg`, `AppBorderBrush`, `PrimaryText`, `SecondaryText`, `NotesText`, `LinkText`, `StatusBarBg`, plus theme-invariant `StatusInfoBrush`/`StatusSuccessBrush`/`StatusErrorBrush`/`StatusReadyBrush`). Built on Avalonia's `FluentTheme` rather than hand-rolled `ControlTemplate`s — only the app-specific palette is overridden; the brand accent (`#007ACC`) flows through `SystemAccentColor`.
+- **`Themes/`** — `Theme.axaml` holds the design tokens (WinUI-style names such as `TextFillColorPrimaryBrush`, `CardBackgroundFillColorDefaultBrush`, `SystemFillColorCautionBrush`, plus app-specific `Location*` brushes) in `Light`/`Dark` `ThemeDictionaries`; `Typography.axaml` the type ramp classes (`title`, `body`, `caption`, `mono`, …); `AppStyles.axaml` button variants and shared styles; `Controls/*.axaml` the control themes. Built on Avalonia's `FluentTheme`; the brand accent (`#007ACC`) flows through `SystemAccentColor`. Views never contain hex colors or assign brushes from code — toggle `Classes` and let `DynamicResource` tokens resolve, or live theme switching breaks.
+- **Design spec** — `docs/design/ui-spec.md` is the UI contract (layouts, copy, states, tokens). Check it before changing UI.
 
 ### Config
 
@@ -52,8 +55,8 @@ Per-user JSON file, not in the repo: `%APPDATA%\hybrID\config.json` (Windows) or
 ### Adding a new setting
 
 1. Add the property to `AppSettings` in `Models/AppConfig.cs`, and its default to `config.default.json`.
-2. Add the corresponding label/input to `Views/SettingsWindow.axaml`.
-3. Wire it up in `SettingsWindow.axaml.cs` — populate on load, persist via `ConfigService.Save` on Apply.
+2. Add a `SettingsCard` with its input to the right section of `Views/Pages/SettingsPage.axaml`.
+3. In `SettingsPage.axaml.cs`: populate it in `Populate`, read it in `ReadSettings`, compare it in `IsDirty` (and `ConnectionChanged` if it affects the LDAP/Graph connection), and write it into `Session.Config` in `Save`. Save writes into the shared config instance — never replace it.
 
 ## Platform quirks (learned the hard way — verify before "fixing")
 

@@ -12,7 +12,10 @@ In environments utilizing On-Premises Active Directory synced to Entra ID (Azure
   - **Single Pane of Glass:** Query an identity once to see its status across Active Directory, Entra ID, and Exchange Server/Online.
   - **Inbuilt Rules:** Automatically determines if a mailbox is On-Premises, Exchange Online (EXO), or an EXO mailbox managed via On-Premises Remote Mailbox rules.
   - **Deep Linking:** Generates dynamic, clickable URLs that drop the technician directly into the exact user or group profile blade in the Entra ID or Exchange Admin Centers.
-  - **Modern UI:** Built on Avalonia, featuring a dark/light/system theme, hover tooltips, and a dynamic status bar.
+  - **Verdict First:** Two cards answer "where do I manage this identity, and its mailbox?" with a button straight into the right portal, plus account status, sync state, proxy addresses, and licenses below.
+  - **Honest About Coverage:** Every result says whether Active Directory and Entra ID were actually searched. If one was skipped or failed, hybrID says so instead of guessing, so a synced user never silently looks cloud-only.
+  - **Copy Summary for Tickets:** One click (or Ctrl+Shift+C) copies a plain-text summary of the result to paste into your ticketing system.
+  - **Modern, Keyboard-First UI:** A Windows 11-style interface on Avalonia with Light/Dark/System themes, keyboard shortcuts for every action, and in-window settings.
   - **Frictionless Authentication:** Device-code sign-in to Microsoft Graph, with tokens cached via each OS's native secure storage to prevent repetitive login prompts.
 
 To view the roadmap/potential future features, check out the [roadmap](/docs/roadmap.md)!
@@ -26,8 +29,8 @@ To view the roadmap/potential future features, check out the [roadmap](/docs/roa
 ## Getting Started
 1.  Download or build the executable for your platform (see [build](/docs/build.md)).
 2.  Launch it.
-3.  On first launch, open **Settings** and configure your On-Premises Exchange FQDN and Active Directory LDAP server.
-4.  Enter a **sAMAccountName**, **UserPrincipalName**, or **ObjectGUID** into the search bar and click **Locate**. The first search against AD or Graph will prompt you to sign in.
+3.  On first launch, open **Settings** (bottom of the left navigation) and configure your Active Directory domain controller and On-Premises Exchange server.
+4.  Enter a **sAMAccountName**, **UserPrincipalName**, or **ObjectGUID** into the search box and press **Enter** (or click **Locate**). The first search signs you in to Active Directory and Microsoft Graph.
 
 For more information, visit the [docs](/docs).
 
@@ -47,11 +50,13 @@ hybrID/
 ├── docs/                # Project documentation
 ├── src/
 │   └── HybridID/        # Application source
-│       ├── Assets/      # Static app resources (icons, images)
+│       ├── Assets/      # Static app resources (icons, fonts)
+│       ├── Controls/    # The app's small composite controls
 │       ├── Models/      # Plain data types (AppConfig, lookup results)
 │       ├── Services/    # Business logic (LDAP/Graph queries, theming, config)
-│       ├── Themes/      # Avalonia theme resource dictionaries
-│       └── Views/       # Windows/dialogs (AXAML + code-behind)
+│       ├── Themes/      # Design tokens, typography, styles, control themes
+│       └── Views/       # Main window, pages, and dialogs (AXAML + code-behind)
+├── tools/               # Dev-only tooling (headless screenshot renderer)
 ├── hybrID.slnx           # Solution file
 ├── .gitignore
 └── README.md
@@ -68,3 +73,4 @@ Evaluation:
   - If found only in AD: Flags as On-Premises only.
   - If found only in Graph: Flags as Cloud-only.
   - If found in both: Flags as Hybrid/Synced and provides appropriate management paths based on your organization's specific sync rules.
+  - If either directory couldn't be searched (skipped, unreachable, or an error), the verdict says so rather than assuming the object isn't there.

@@ -5,6 +5,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.3.0] - 2026-10-24
+
+### Changed
+  - **Redesigned Interface:** hybrID is now a single Windows 11-style window with a navigation rail (Search, About, Settings), connection badges for Active Directory and Entra ID in the title bar, and in-window dialogs instead of separate windows. The status bar is gone; its messages now appear as banners, badges, and toasts. Keyboard shortcuts cover every main action (Ctrl+L, Enter, Esc, Ctrl+Shift+C, Ctrl+1/2, F5, Ctrl+,; ⌘ on macOS).
+  - **Search Results:** Results lead with two "Manage identity in" / "Manage mailbox in" cards that open the right portal, followed by a guidance note and detail cards for identity attributes, account status, mail and proxy addresses, licenses, and groups. Multiple matches are shown as a list to pick from.
+  - **Settings:** Settings is now a page. The theme applies and saves immediately; other changes are staged behind an Unsaved changes bar (Save, Discard, Ctrl+S), with validation, a prompt when leaving with unsaved changes, and Test connection buttons that use the values on screen. The Graph client ID and link templates can now be edited in the app.
+  - **License Names:** Licenses are named from Microsoft Graph's license details (no extra permissions) instead of a built-in table; unrecognized licenses show their SKU part number.
+
+### Added
+  - **Search Coverage:** Every result shows whether Active Directory and Entra ID were each searched. Skipped, unreachable, or failed directories are called out with a banner and a fix (Retry, Sign in, Search again), and the verdict no longer claims "not synced" or "cloud-only" when the other directory wasn't checked.
+  - **Copy Summary:** A plain-text summary of the result for tickets (Ctrl+Shift+C).
+  - **Copy Buttons:** Copy any identity attribute, proxy address, license, link, or DN with one click.
+  - **About Page:** Version info, links to the source and issue tracker, license, third-party notices, and system information to include in bug reports.
+  - **Preview Mode:** `--preview` (or `HYBRID_PREVIEW=1`) shows sample data without a domain controller or tenant, for trying the app and for UI work.
+
+### Fixed
+  - **Wrong License Names:** Microsoft 365 E5 was shown as "Microsoft 365 E3 (no Teams)", and several other licenses were mislabeled.
+  - **Silent Directory Errors:** An Active Directory or Microsoft Graph error during a search was treated as "not found", which could make a synced object look cloud-only or on-premises only. Errors are now reported, and a dropped Active Directory connection signs in again on the next search.
+  - **Theme Switching:** Status colors no longer get stuck on the previous theme after switching.
+
 ## [0.2.0] - 2026-09-22
 
 ### Changed
@@ -38,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Documentation:** Created standard docs including `README.md`, `CONTRIBUTING.md`, and `docs/Architecture.md`.
 
 [unreleased]:  
+[0.3.0]: https://github.com/griffeth-barker/hybrID/releases/tag/v0.3.0  
 [0.2.0]: https://github.com/griffeth-barker/hybrID/releases/tag/v0.2.0  
 [0.1.1]: https://github.com/griffeth-barker/hybrID/releases/tag/v0.1.1  
 [0.1.0]: https://github.com/griffeth-barker/hybrID/releases/tag/v0.1.0  

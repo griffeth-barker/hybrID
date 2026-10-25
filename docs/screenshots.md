@@ -1,16 +1,17 @@
 # Screenshots
+Shown with sample data in the Dark theme. Every screen also has a Light theme.
 
-## Main Window (Pre-Search)
+## Search (Before Searching)
 ![](/assets/screenshot-main-presearch.png)
 
-## Main Window (Searching)
+## Search (Searching)
 ![](/assets/screenshot-main-searching.png)
 
-## Main Window (Post-Search)
+## Search (Result)
 ![](/assets/screenshot-main-postsearch.png)
 
-## Configuration Window
+## Settings
 ![](/assets/screenshot-configuration.png)
 
-## About Window
+## About
 ![](/assets/screenshot-about.png)
