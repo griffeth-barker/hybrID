@@ -125,6 +125,12 @@
               <Button x:Name="BtnGraphSuspectAgain" Content="Search again"/>
             </c:InfoBar.ActionContent>
           </c:InfoBar>
+          <c:InfoBar x:Name="GraphErrorBar" Severity="Warning" IsOpen="False" IsClosable="True"
+                     Title="Entra ID wasn't searched">
+            <c:InfoBar.ActionContent>
+              <Button x:Name="BtnGraphErrorAgain" Content="Search again"/>
+            </c:InfoBar.ActionContent>
+          </c:InfoBar>
           <c:InfoBar x:Name="GraphInitBar" Severity="Error" IsOpen="False" IsClosable="True"
                      Title="Couldn't start Microsoft Graph sign-in">
             <c:InfoBar.ActionContent>

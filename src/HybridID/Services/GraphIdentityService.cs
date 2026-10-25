@@ -16,40 +16,44 @@ public sealed class GraphIdentityService
 {
     private static readonly string[] UserSelect =
     {
-        "id", "displayName", "userPrincipalName", "accountEnabled", "lastPasswordChangeDateTime",
+        "id", "displayName", "userPrincipalName", "mail", "accountEnabled", "lastPasswordChangeDateTime",
         "onPremisesSyncEnabled", "onPremisesLastSyncDateTime", "proxyAddresses", "assignedLicenses",
     };
 
     private static readonly string[] GroupSelect =
     {
-        "id", "displayName", "groupTypes", "mailEnabled", "securityEnabled",
+        "id", "displayName", "mail", "groupTypes", "mailEnabled", "securityEnabled",
     };
 
-    // Common commercial SKU GUID -> friendly name. Microsoft's full list is long and stable;
-    // this covers the SKUs a helpdesk tech is most likely to actually see. Unmapped SKUs fall
-    // back to showing the raw GUID rather than failing - see DescribeSku. Deliberately not
-    // fetched from /subscribedSkus at runtime: that endpoint needs Organization.Read.All, a
-    // permission this app doesn't otherwise need - not worth the extra admin-consent ask.
-    private static readonly Dictionary<string, string> KnownSkus = new(StringComparer.OrdinalIgnoreCase)
+    // SKU part number (licenseDetails.skuPartNumber) -> friendly name for the SKUs a helpdesk
+    // tech most often sees. Part numbers are stable and readable, so an unmapped SKU still shows
+    // something meaningful (e.g. "VISIOCLIENT") instead of a GUID. Deliberately not fetched from
+    // /subscribedSkus at runtime: that endpoint needs Organization.Read.All, a permission this
+    // app doesn't otherwise need - not worth the extra admin-consent ask. (The old GUID table
+    // mixed up several SKU IDs and service-plan IDs, e.g. M365 E5 showed as "E3 (no Teams)".)
+    private static readonly Dictionary<string, string> KnownSkuParts = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["06ebc4ee-1bb5-47dd-8120-11324bc54e06"] = "Microsoft 365 E5",
-        ["c7df2760-2c81-4ef7-b578-5b5392b571df"] = "Microsoft 365 E5 (no Teams)",
-        ["05e9a617-0261-4cee-bb44-138d3ef5d965"] = "Microsoft 365 E3",
-        ["06ebc4ee-1bb5-47dd-8120-11324bc54e06"] = "Microsoft 365 E3 (no Teams)",
-        ["cbdc14ab-d96c-4c30-b9f4-6ada7cdc1d46"] = "Microsoft 365 Business Premium",
-        ["3b555118-da6a-4418-894f-7df1e2f96fae"] = "Microsoft 365 Business Standard",
-        ["dab7782a-93b1-4074-8bb1-0e61318bea0b"] = "Microsoft 365 Business Basic",
-        ["18181a46-0d4e-45cd-891e-60aabd171b4e"] = "Office 365 E1",
-        ["6634e0ce-1a9f-428c-a498-f84ec7b8aa2e"] = "Office 365 E3",
-        ["c7df2760-2c81-4ef7-b578-5b5392b571df"] = "Office 365 E5",
-        ["4b9405b0-7788-4568-add1-99614e613b69"] = "Exchange Online (Plan 1)",
-        ["19ec0d23-8335-4cbd-94ac-6050e30712fa"] = "Exchange Online (Plan 2)",
-        ["e43b5b99-8dfb-405f-9987-dc307f34980e"] = "Exchange Online Kiosk",
-        ["f30db892-07e9-47e9-837c-80727f46fd3d"] = "Microsoft Power Automate Free",
-        ["e97c048c-37a4-45fb-ab50-922fbf07a370"] = "Windows Store for Business",
-        ["f245ecc8-75af-4f8e-b61f-27d8114de5f3"] = "Entra ID P1",
-        ["eec0eb4f-6444-4f95-aba0-50c24d67f998"] = "Entra ID P2",
-        ["11dee6af-eca8-419f-8061-6864517c1875"] = "Copilot for Microsoft 365",
+        ["SPE_E5"] = "Microsoft 365 E5",
+        ["SPE_E3"] = "Microsoft 365 E3",
+        ["SPE_F1"] = "Microsoft 365 F3",
+        ["SPB"] = "Microsoft 365 Business Premium",
+        ["O365_BUSINESS_PREMIUM"] = "Microsoft 365 Business Standard",
+        ["O365_BUSINESS_ESSENTIALS"] = "Microsoft 365 Business Basic",
+        ["STANDARDPACK"] = "Office 365 E1",
+        ["ENTERPRISEPACK"] = "Office 365 E3",
+        ["ENTERPRISEPREMIUM"] = "Office 365 E5",
+        ["DESKLESSPACK"] = "Office 365 F3",
+        ["EXCHANGESTANDARD"] = "Exchange Online (Plan 1)",
+        ["EXCHANGEENTERPRISE"] = "Exchange Online (Plan 2)",
+        ["EXCHANGEDESKLESS"] = "Exchange Online Kiosk",
+        ["EMS"] = "Enterprise Mobility + Security E3",
+        ["EMSPREMIUM"] = "Enterprise Mobility + Security E5",
+        ["AAD_PREMIUM"] = "Microsoft Entra ID P1",
+        ["AAD_PREMIUM_P2"] = "Microsoft Entra ID P2",
+        ["Microsoft_365_Copilot"] = "Microsoft 365 Copilot",
+        ["POWER_BI_PRO"] = "Power BI Pro",
+        ["POWER_BI_STANDARD"] = "Power BI (free)",
+        ["FLOW_FREE"] = "Microsoft Power Automate Free",
     };
 
     private readonly GraphServiceClient _client;
@@ -69,7 +73,7 @@ public sealed class GraphIdentityService
         var user = await TryGetUserAsync(upnToTry);
         if (user is not null)
         {
-            return new[] { MapUser(user) };
+            return new[] { MapUser(user, await GetLicenseNamesAsync(user)) };
         }
 
         var groups = await FindGroupsAsync(identity);
@@ -90,11 +94,11 @@ public sealed class GraphIdentityService
                 rq.QueryParameters.Select = UserSelect;
             });
         }
-        catch (ODataError)
+        catch (ODataError ex) when (IsNotFound(ex))
         {
-            // Mirrors the original's Get-MgUser -ErrorAction SilentlyContinue: any Graph error
-            // here (404 not found, 400 for an identity string Graph doesn't accept as a user
-            // key, etc.) should fall through to the group lookup, not abort it.
+            // 404 not found or 400 for an identity string Graph doesn't accept as a user key:
+            // fall through to the group lookup. Anything else (401/403, throttling, outages)
+            // propagates so the search reports Entra ID as not searched instead of "no match".
             return null;
         }
     }
@@ -111,7 +115,7 @@ public sealed class GraphIdentityService
                 return new List<Microsoft.Graph.Models.Group> { byId };
             }
         }
-        catch (ODataError)
+        catch (ODataError ex) when (IsNotFound(ex))
         {
         }
 
@@ -127,23 +131,54 @@ public sealed class GraphIdentityService
             });
             return response?.Value ?? new List<Microsoft.Graph.Models.Group>();
         }
-        catch (ODataError)
+        catch (ODataError ex) when (IsNotFound(ex))
         {
             return new List<Microsoft.Graph.Models.Group>();
         }
     }
 
-    private static GraphLookupResult MapUser(Microsoft.Graph.Models.User user) => new()
+    private static bool IsNotFound(ODataError ex) => ex.ResponseStatusCode is 400 or 404;
+
+    /// <summary>
+    /// Friendly names from licenseDetails (same User.Read.All scope). If that call fails, falls
+    /// back to the assigned SKU IDs so the license count is still right.
+    /// </summary>
+    private async Task<IReadOnlyList<string>> GetLicenseNamesAsync(Microsoft.Graph.Models.User user)
+    {
+        if (user.AssignedLicenses is not { Count: > 0 } assigned)
+        {
+            return Array.Empty<string>();
+        }
+
+        try
+        {
+            var details = await _client.Users[user.Id].LicenseDetails.GetAsync(rq =>
+                rq.QueryParameters.Select = new[] { "skuId", "skuPartNumber" });
+            if (details?.Value is { Count: > 0 } list)
+            {
+                return list.Select(d => DescribeSku(d.SkuPartNumber, d.SkuId)).ToList();
+            }
+        }
+        catch (ODataError)
+        {
+        }
+
+        return assigned.Select(l => DescribeSku(null, l.SkuId)).ToList();
+    }
+
+    private static GraphLookupResult MapUser(Microsoft.Graph.Models.User user, IReadOnlyList<string> licenses) => new()
     {
         Kind = GraphObjectKind.User,
         Id = user.Id!,
         DisplayName = user.DisplayName ?? user.UserPrincipalName ?? user.Id!,
+        UserPrincipalName = user.UserPrincipalName,
+        Mail = user.Mail,
         AccountEnabled = user.AccountEnabled,
         PasswordLastSetUtc = user.LastPasswordChangeDateTime?.UtcDateTime,
         SyncEnabled = user.OnPremisesSyncEnabled,
         LastSyncedUtc = user.OnPremisesLastSyncDateTime?.UtcDateTime,
         ProxyAddresses = user.ProxyAddresses?.ToList() ?? new List<string>(),
-        Licenses = user.AssignedLicenses?.Select(l => DescribeSku(l.SkuId)).ToList() ?? new List<string>(),
+        Licenses = licenses,
     };
 
     private async Task<GraphLookupResult> MapGroupAsync(Microsoft.Graph.Models.Group group)
@@ -155,6 +190,7 @@ public sealed class GraphIdentityService
             Kind = GraphObjectKind.Group,
             Id = group.Id!,
             DisplayName = group.DisplayName ?? group.Id!,
+            Mail = group.Mail,
             GroupTypeDescription = DescribeGroupType(group),
             MemberCount = memberCount,
         };
@@ -194,13 +230,13 @@ public sealed class GraphIdentityService
         return "Unknown";
     }
 
-    private static string DescribeSku(Guid? skuId)
+    private static string DescribeSku(string? partNumber, Guid? skuId)
     {
-        if (skuId is not { } id)
+        if (!string.IsNullOrEmpty(partNumber))
         {
-            return "Unknown license";
+            return KnownSkuParts.TryGetValue(partNumber, out var name) ? name : partNumber;
         }
 
-        return KnownSkus.TryGetValue(id.ToString(), out var name) ? name : $"License ({id})";
+        return skuId is { } id ? $"License ({id})" : "Unknown license";
     }
 }

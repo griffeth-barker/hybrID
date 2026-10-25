@@ -14,6 +14,8 @@ public sealed class GraphLookupResult
     public required GraphObjectKind Kind { get; init; }
     public required string Id { get; init; }
     public required string DisplayName { get; init; }
+    public string? UserPrincipalName { get; init; }
+    public string? Mail { get; init; }
 
     public bool? AccountEnabled { get; init; }
     public DateTime? PasswordLastSetUtc { get; init; }

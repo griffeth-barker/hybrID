@@ -98,6 +98,14 @@ public sealed class IdentityLookupResult
     /// <summary>Read-only "View in ..." links for systems that mirror, but don't manage, the object.</summary>
     public IReadOnlyList<ManagementLink> ViewLinks { get; init; } = Array.Empty<ManagementLink>();
 
+    // Service-behavior additions (ui-spec.md section 11 [M2]): a directory that errored is
+    // reported instead of silently reading as "not found" (which routes synced objects wrong).
+    /// <summary>Active Directory query error (e.g. a dead cached connection); null when AD answered or wasn't queried.</summary>
+    public string? AdError { get; init; }
+
+    /// <summary>Microsoft Graph error (auth, permissions, throttling); null when Graph answered.</summary>
+    public string? GraphError { get; init; }
+
     /// <summary>Non-null and populated only when the search matched more than one object.</summary>
     public IReadOnlyList<AmbiguousCandidate>? Candidates { get; init; }
 }

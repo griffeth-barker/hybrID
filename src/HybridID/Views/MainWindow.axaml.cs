@@ -97,8 +97,8 @@ public partial class MainWindow : Window, IAppShell
         Environment.GetCommandLineArgs().Contains("--preview", StringComparer.OrdinalIgnoreCase) ||
         Environment.GetEnvironmentVariable("HYBRID_PREVIEW") == "1";
 
-    private static ILookupSource CreateLookupSource(AppSession session) =>
-        IsPreviewMode ? new PreviewLookupSource(session.Config) : new UnwiredLookupSource();
+    private ILookupSource CreateLookupSource(AppSession session) =>
+        IsPreviewMode ? new PreviewLookupSource(session.Config) : new LiveLookupSource(this);
 
     public bool IsOverlayOpen => Overlay.IsOpen;
 

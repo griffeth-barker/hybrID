@@ -25,6 +25,7 @@ public sealed class PreviewLookupSource : ILookupSource
         ("adskip", "AD skipped"),
         ("adfail", "AD unreachable"),
         ("signin", "sign-in didn't finish"),
+        ("entrafail", "Entra ID error"),
         ("grapherror", "Graph can't start"),
         ("nobody", "no match"),
     };
@@ -91,6 +92,7 @@ public sealed class PreviewLookupSource : ILookupSource
                 AdError = "The LDAP server is unavailable (dc01.contoso.com:636)",
             },
             "signin" => new LookupOutcome { Result = NotFound(), DeviceCodeShown = true },
+            "entrafail" => Outcome(OnPremUser(graphError: "Insufficient privileges to complete the operation.")),
             _ => Outcome(NotFound()),
         };
     }
@@ -153,7 +155,7 @@ public sealed class PreviewLookupSource : ILookupSource
         };
     }
 
-    private IdentityLookupResult OnPremUser()
+    private IdentityLookupResult OnPremUser(string? graphError = null)
     {
         var guid = "a8f3e2d1-6c5b-4a49-8e7f-1b2c3d4e5f60";
         return new IdentityLookupResult
@@ -178,6 +180,7 @@ public sealed class PreviewLookupSource : ILookupSource
             ObjectGuid = Guid.Parse(guid),
             DistinguishedName = $"CN=Bruce Wayne,OU=Executives,OU=HQ,{BaseDn}",
             ProxyAddresses = new[] { "SMTP:bruce.wayne@" + Domain, "smtp:bwayne@" + Domain },
+            GraphError = graphError,
         };
     }
 

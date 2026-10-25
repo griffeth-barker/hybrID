@@ -59,11 +59,11 @@ public partial class SearchPage : UserControl, IShellPage
     private Coverage _entraCoverage;
 
     /// <summary>For the XAML previewer only.</summary>
-    public SearchPage() : this(null, new UnwiredLookupSource())
+    public SearchPage() : this(null, new PreviewLookupSource(new AppConfig()))
     {
     }
 
-    public SearchPage(IAppShell shell) : this(shell, new UnwiredLookupSource())
+    public SearchPage(IAppShell shell) : this(shell, new LiveLookupSource(shell))
     {
     }
 
@@ -86,6 +86,7 @@ public partial class SearchPage : UserControl, IShellPage
         BtnSearchAgain.Click += async (_, _) => await SearchAgainAsync();
         BtnNoResultAgain.Click += async (_, _) => await SearchAgainAsync();
         BtnGraphSuspectAgain.Click += async (_, _) => await SearchAgainAsync();
+        BtnGraphErrorAgain.Click += async (_, _) => await SearchAgainAsync();
         BtnCopySummary.Click += async (_, _) => await CopySummaryAsync();
         BtnSetupSettings.Click += (_, _) => _shell?.Navigate(AppPage.Settings);
         BtnGraphInitSettings.Click += (_, _) => _shell?.Navigate(AppPage.Settings);
@@ -276,9 +277,11 @@ public partial class SearchPage : UserControl, IShellPage
         _lastOutcome = outcome;
 
         var hasGraphData = result.SyncState is SyncState.Hybrid or SyncState.CloudOnly;
-        var graphSuspect = outcome.DeviceCodeShown && !hasGraphData;
+        var graphError = result.GraphError;
+        // Heuristic for sources that can't report Graph errors; a reported error replaces it.
+        var graphSuspect = graphError is null && outcome.DeviceCodeShown && !hasGraphData;
         _adCoverage = AdCoverageOf(outcome);
-        _entraCoverage = graphSuspect
+        _entraCoverage = graphSuspect || graphError is not null
             ? new Coverage("Entra ID: may be incomplete", "Icon.Warning", "caution")
             : hasGraphData
                 ? new Coverage("Entra ID: match", "Icon.CheckCircle", "success")
@@ -295,6 +298,8 @@ public partial class SearchPage : UserControl, IShellPage
         AdSkippedBar.IsOpen = outcome.AdCoverage == AdCoverage.Skipped;
         SyncHintBar.IsOpen = adNotSearched && result.EntraSyncEnabled == true;
         GraphSuspectBar.IsOpen = graphSuspect;
+        GraphErrorBar.Message = graphError;
+        GraphErrorBar.IsOpen = graphError is not null;
 
         if (result.Candidates is { Count: > 0 } candidates)
         {
@@ -365,11 +370,13 @@ public partial class SearchPage : UserControl, IShellPage
         var kindLabel = DisplayFormat.ObjectKindLabel(r.ObjectClass);
         var subId = r.UserPrincipalName ?? (kind == ObjectKind.Group ? r.Mail : null);
         ResultSubline.Text = subId is null ? kindLabel : $"{kindLabel} · {subId}";
-        BuildPills(r, outcome.AdCoverage != AdCoverage.Searched);
+        var adNotChecked = outcome.AdCoverage != AdCoverage.Searched;
+        var entraNotChecked = r.GraphError is not null;
+        BuildPills(r, adNotChecked, entraNotChecked);
         BuildCoverage(ResultCoverage);
 
         // Verdict
-        RenderIdentityCard(r);
+        RenderIdentityCard(r, adNotChecked, entraNotChecked);
         RenderMailboxCard(r);
 
         // Guidance
@@ -392,11 +399,15 @@ public partial class SearchPage : UserControl, IShellPage
         RenderGroupRows(r, kind);
     }
 
-    private void BuildPills(IdentityLookupResult r, bool adNotChecked)
+    private void BuildPills(IdentityLookupResult r, bool adNotChecked, bool entraNotChecked)
     {
         PillsPanel.Children.Clear();
         switch (r.SyncState)
         {
+            // A directory that wasn't searched can't back the sync claim: say so instead.
+            case SyncState.OnPremOnly when entraNotChecked:
+                AddPill("On-premises (Entra ID not checked)", "Icon.Building", PillKind.Caution);
+                break;
             case SyncState.OnPremOnly:
                 AddPill("On-premises only", "Icon.Building", PillKind.OnPrem);
                 break;
@@ -434,7 +445,7 @@ public partial class SearchPage : UserControl, IShellPage
         return null;
     }
 
-    private void RenderIdentityCard(IdentityLookupResult r)
+    private void RenderIdentityCard(IdentityLookupResult r, bool adNotChecked, bool entraNotChecked)
     {
         var card = IdentityCard;
         ResetCard(card);
@@ -444,7 +455,9 @@ public partial class SearchPage : UserControl, IShellPage
             card.Location = ManagementLocation.Cloud;
             card.Icon = Icon("Icon.Cloud20");
             card.LocationTitle = "Entra ID";
-            card.Body = "Cloud-only object. Manage it in the Microsoft Entra admin center.";
+            card.Body = adNotChecked
+                ? "Found in Entra ID. Active Directory wasn't searched, so it may be synced from on-premises."
+                : "Cloud-only object. Manage it in the Microsoft Entra admin center.";
             card.PrimaryText = "Open in Entra admin center";
             card.PrimaryUrl = r.ManageIdentity?.Url;
             return;
@@ -455,7 +468,9 @@ public partial class SearchPage : UserControl, IShellPage
         card.LocationTitle = "Active Directory";
         card.Body = r.SyncState == SyncState.Hybrid
             ? "Source of authority is on-premises AD. Changes sync to Entra ID."
-            : "Exists only in on-premises Active Directory. Not synced to Entra ID.";
+            : entraNotChecked
+                ? "Source of authority is on-premises AD. Entra ID wasn't searched, so sync status is unknown."
+                : "Exists only in on-premises Active Directory. Not synced to Entra ID.";
 
         if (r.DistinguishedName is { } dn)
         {
@@ -965,6 +980,7 @@ public partial class SearchPage : UserControl, IShellPage
         AdSkippedBar.IsOpen = false;
         SyncHintBar.IsOpen = false;
         GraphSuspectBar.IsOpen = false;
+        GraphErrorBar.IsOpen = false;
         GraphInitBar.IsOpen = false;
     }
 

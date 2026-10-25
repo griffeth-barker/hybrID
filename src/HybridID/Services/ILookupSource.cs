@@ -39,8 +39,9 @@ public sealed class LookupInitException : Exception
 
 /// <summary>
 /// What SearchPage searches through. Keeps the page independent of where results come from:
-/// <see cref="PreviewLookupSource"/> serves sample data for design review (--preview); the live
-/// source (AD sign-in prompt, device-code sign-in, AppSession lookup) plugs in here later.
+/// <see cref="PreviewLookupSource"/> serves sample data for design review (--preview);
+/// <c>Views.LiveLookupSource</c> does real searches (AD sign-in prompt, device-code sign-in,
+/// AppSession lookup).
 /// </summary>
 public interface ILookupSource
 {
@@ -55,16 +56,4 @@ public interface ILookupSource
     /// credentials if needed). Returns true when the page should re-run the search.
     /// </summary>
     Task<bool> PrepareAdRetryAsync();
-}
-
-/// <summary>Placeholder until the live source is wired to the new UI: every search reports it plainly.</summary>
-public sealed class UnwiredLookupSource : ILookupSource
-{
-    public bool IsPreview => false;
-
-    public Task<LookupOutcome> LookupAsync(string identity, Action<string> reportPhase) =>
-        throw new LookupInitException(
-            "Live search isn't connected to the new interface yet. Start hybrID with --preview to try it with sample data.");
-
-    public Task<bool> PrepareAdRetryAsync() => Task.FromResult(false);
 }
