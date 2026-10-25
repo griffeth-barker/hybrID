@@ -4,27 +4,24 @@
                  x:Class="HybridID.Views.Dialogs.MessageDialog"
                  Width="440"
                  DefaultButton="Primary">
-  <!-- PLACEHOLDER (Phase 1/2). Phase 3 moves the severity icon next to the title (spec 5.4.3). -->
-  <Grid ColumnDefinitions="Auto,*">
-    <PathIcon x:Name="SeverityIcon" Width="20" Height="20" Margin="0,0,12,0"
-              VerticalAlignment="Top" IsVisible="False"/>
-    <SelectableTextBlock x:Name="MessageText" Grid.Column="1" Classes="body" TextWrapping="Wrap"/>
-  </Grid>
+  <!-- docs/design/ui-spec.md section 5.4.3. The optional severity icon sits left of the title
+       (OverlayDialog.TitleIcon), set from code. -->
+  <SelectableTextBlock x:Name="MessageText" Classes="body" TextWrapping="Wrap"/>
 
   <c:OverlayDialog.Styles>
-    <Style Selector="PathIcon#SeverityIcon.informational">
+    <Style Selector="PathIcon.severity.informational">
       <Setter Property="Data" Value="{DynamicResource Icon.InfoFilled}"/>
       <Setter Property="Foreground" Value="{DynamicResource SystemFillColorAttentionBrush}"/>
     </Style>
-    <Style Selector="PathIcon#SeverityIcon.success">
+    <Style Selector="PathIcon.severity.success">
       <Setter Property="Data" Value="{DynamicResource Icon.CheckCircleFilled}"/>
       <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
     </Style>
-    <Style Selector="PathIcon#SeverityIcon.warning">
+    <Style Selector="PathIcon.severity.warning">
       <Setter Property="Data" Value="{DynamicResource Icon.WarningFilled}"/>
       <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}"/>
     </Style>
-    <Style Selector="PathIcon#SeverityIcon.error">
+    <Style Selector="PathIcon.severity.error">
       <Setter Property="Data" Value="{DynamicResource Icon.ErrorFilled}"/>
       <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
     </Style>

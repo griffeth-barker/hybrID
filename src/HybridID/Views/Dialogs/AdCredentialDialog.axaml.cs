@@ -1,5 +1,9 @@
 using System;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Automation;
+using Avalonia.Controls;
+using Avalonia.Media;
 using HybridID.Controls;
 
 namespace HybridID.Views.Dialogs;
@@ -15,7 +19,6 @@ public enum AdCredentialPurpose
 /// <summary>
 /// LDAP credential prompt with inline retry (spec section 5.4.1). Result: <see cref="OverlayDialogResult.Primary"/>
 /// when <c>tryConnect</c> succeeded, <see cref="OverlayDialogResult.None"/> for Skip/Cancel/Esc.
-/// PLACEHOLDER implementation; the constructor and result contract are final.
 /// </summary>
 public partial class AdCredentialDialog : OverlayDialog
 {
@@ -27,6 +30,7 @@ public partial class AdCredentialDialog : OverlayDialog
     {
         InitializeComponent();
         UsernameBox.TextChanged += (_, _) => UpdatePrimaryEnabled();
+        BtnReveal.Click += (_, _) => SetRevealed(!PasswordBox.RevealPassword);
         UpdatePrimaryEnabled();
     }
 
@@ -66,8 +70,17 @@ public partial class AdCredentialDialog : OverlayDialog
         UsernameBox.IsEnabled = false;
         PasswordBox.IsEnabled = false;
         IsPrimaryButtonEnabled = false;
-        PrimaryButtonContent = "Signing in…";
-        ErrorText.IsVisible = false;
+        PrimaryButtonContent = new StackPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            Spacing = 8,
+            Children =
+            {
+                new ProgressRing { Width = 16, Height = 16 },
+                new TextBlock { Text = "Signing in…", VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center },
+            },
+        };
+        ErrorBar.IsOpen = false;
 
         string? error;
         try
@@ -92,8 +105,8 @@ public partial class AdCredentialDialog : OverlayDialog
             return;
         }
 
-        ErrorText.Text = $"Couldn't connect: {error}";
-        ErrorText.IsVisible = true;
+        ErrorBar.Message = error;
+        ErrorBar.IsOpen = true;
         PasswordBox.Focus();
         PasswordBox.SelectAll();
     }
@@ -108,6 +121,16 @@ public partial class AdCredentialDialog : OverlayDialog
     {
         // Never keep the password around after the dialog closes.
         PasswordBox.Text = "";
+        SetRevealed(false);
+    }
+
+    private void SetRevealed(bool revealed)
+    {
+        PasswordBox.RevealPassword = revealed;
+        RevealIcon.Data = Application.Current?.FindResource(revealed ? "Icon.EyeOff" : "Icon.Eye") as Geometry;
+        var label = revealed ? "Hide password" : "Show password";
+        ToolTip.SetTip(BtnReveal, label);
+        AutomationProperties.SetName(BtnReveal, label);
     }
 
     private void UpdatePrimaryEnabled() =>

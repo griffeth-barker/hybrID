@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using HybridID.Controls;
 
 namespace HybridID.Views.Dialogs;
@@ -5,7 +6,6 @@ namespace HybridID.Views.Dialogs;
 /// <summary>
 /// Generic message / confirm dialog; replaces the legacy AlertDialog (spec section 5.4.3).
 /// Result: Primary / Secondary / None (Close button or Esc).
-/// PLACEHOLDER implementation; the constructor is final.
 /// </summary>
 public partial class MessageDialog : OverlayDialog
 {
@@ -28,14 +28,22 @@ public partial class MessageDialog : OverlayDialog
 
         if (severity is { } s)
         {
-            SeverityIcon.IsVisible = true;
-            SeverityIcon.Classes.Add(s switch
+            TitleIcon = new PathIcon
             {
-                InfoBarSeverity.Success => "success",
-                InfoBarSeverity.Warning => "warning",
-                InfoBarSeverity.Error => "error",
-                _ => "informational",
-            });
+                Width = 20,
+                Height = 20,
+                Classes =
+                {
+                    "severity",
+                    s switch
+                    {
+                        InfoBarSeverity.Success => "success",
+                        InfoBarSeverity.Warning => "warning",
+                        InfoBarSeverity.Error => "error",
+                        _ => "informational",
+                    },
+                },
+            };
         }
     }
 }

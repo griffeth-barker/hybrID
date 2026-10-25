@@ -6,7 +6,9 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using HybridID;
 using HybridID.Services;
+using HybridID.Controls;
 using HybridID.Views;
+using HybridID.Views.Dialogs;
 using HybridID.Views.Pages;
 
 // Renders MainWindow headlessly in preview mode (sample data) and saves one PNG per
@@ -16,7 +18,9 @@ using HybridID.Views.Pages;
 //
 // No identities = the default set. Use "idle" for the empty state, "w=640" to change width,
 // "settings" / "about" for those pages, a "+" suffix ("settings+") to expand every expander,
-// and "settings-dirty" for staged (unsaved, never written) edits that show the SaveBar.
+// "settings-dirty" for staged (unsaved, never written) edits that show the SaveBar, and
+// "dlg-ad", "dlg-ad-busy", "dlg-ad-error", "dlg-code", "dlg-code-expired", "dlg-message",
+// "dlg-confirm" for the overlay dialogs (fake callbacks; nothing connects anywhere).
 Environment.SetEnvironmentVariable("HYBRID_PREVIEW", "1");
 
 var outDir = args.Length > 0 ? args[0] : Path.Combine(Directory.GetCurrentDirectory(), "screenshots");
@@ -45,14 +49,20 @@ foreach (var theme in new[] { "Light", "Dark" })
             continue;
         }
 
-        var window = new MainWindow { Width = width, Height = 2000 };
+        var isDialog = scenario.StartsWith("dlg-", StringComparison.Ordinal);
+        var window = new MainWindow { Width = width, Height = isDialog ? 820 : 2000 };
         // After construction: MainWindow applies the user's saved theme.
         ThemeService.Apply(theme);
         window.Show();
         Pump(TimeSpan.FromMilliseconds(300));
 
         var pageName = scenario.TrimEnd('+');
-        if (pageName is "settings" or "about" or "settings-dirty")
+        if (isDialog)
+        {
+            ShowDialog(window, scenario);
+            Pump(TimeSpan.FromMilliseconds(900));
+        }
+        else if (pageName is "settings" or "about" or "settings-dirty")
         {
             window.Navigate(pageName == "about" ? AppPage.About : AppPage.Settings);
             Pump(TimeSpan.FromMilliseconds(600));
@@ -88,6 +98,39 @@ foreach (var theme in new[] { "Light", "Dark" })
 #pragma warning restore CS0618
         Console.WriteLine(name);
         window.Close();
+    }
+}
+
+// Opens one dialog with fake callbacks: nothing here signs in or connects to anything.
+static void ShowDialog(MainWindow window, string scenario)
+{
+    OverlayDialog dialog = scenario switch
+    {
+        "dlg-ad" or "dlg-ad-busy" or "dlg-ad-error" => new AdCredentialDialog(
+            "dc01.contoso.com · LDAPS · port 636",
+            scenario == "dlg-ad-busy"
+                ? (_, _) => new TaskCompletionSource<string?>().Task
+                : (_, _) => Task.FromResult<string?>("The supplied credential is invalid."),
+            AdCredentialPurpose.Search),
+        "dlg-code" or "dlg-code-expired" => new DeviceCodeDialog(Azure.Identity.IdentityModelFactory.DeviceCodeInfo(
+            "ABCD-EFGH", "device-code", new Uri("https://microsoft.com/devicelogin"),
+            scenario == "dlg-code" ? DateTimeOffset.Now.AddMinutes(14) : DateTimeOffset.Now.AddMinutes(-1),
+            "To sign in, use a web browser to open the page https://microsoft.com/devicelogin and enter the code ABCD-EFGH to authenticate.",
+            "client-id", new[] { "User.Read.All" })),
+        "dlg-confirm" => new MessageDialog("Save changes?", "You have unsaved settings.", "Cancel", "Save", "Don't save"),
+        _ => new MessageDialog("Couldn't save settings", "Access to the path '/Users/me/Library/Application Support/hybrID/config.json' is denied.",
+            severity: InfoBarSeverity.Error),
+    };
+
+    _ = window.ShowDialogAsync(dialog);
+    Pump(TimeSpan.FromMilliseconds(500));
+
+    if (dialog is AdCredentialDialog && scenario != "dlg-ad")
+    {
+        dialog.FindControl<TextBox>("UsernameBox")!.Text = "CONTOSO\\jsmith";
+        dialog.FindControl<TextBox>("PasswordBox")!.Text = "not-a-real-password";
+        dialog.GetVisualDescendants().OfType<Button>().First(b => b.Name == "PART_PrimaryButton")
+            .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
     }
 }
 

@@ -32,6 +32,9 @@ public class OverlayDialog : ContentControl
     public static readonly StyledProperty<string?> TitleProperty =
         AvaloniaProperty.Register<OverlayDialog, string?>(nameof(Title));
 
+    public static readonly StyledProperty<object?> TitleIconProperty =
+        AvaloniaProperty.Register<OverlayDialog, object?>(nameof(TitleIcon));
+
     public static readonly StyledProperty<string?> PrimaryButtonTextProperty =
         AvaloniaProperty.Register<OverlayDialog, string?>(nameof(PrimaryButtonText));
 
@@ -61,6 +64,9 @@ public class OverlayDialog : ContentControl
     protected override Type StyleKeyOverride => typeof(OverlayDialog);
 
     public string? Title { get => GetValue(TitleProperty); set => SetValue(TitleProperty, value); }
+
+    /// <summary>Optional content (typically a 20 px PathIcon) shown left of the title.</summary>
+    public object? TitleIcon { get => GetValue(TitleIconProperty); set => SetValue(TitleIconProperty, value); }
 
     /// <summary>Null/empty hides the button. Same for the other two button texts.</summary>
     public string? PrimaryButtonText { get => GetValue(PrimaryButtonTextProperty); set => SetValue(PrimaryButtonTextProperty, value); }

@@ -2,26 +2,82 @@
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:c="using:HybridID.Controls"
                  x:Class="HybridID.Views.Dialogs.DeviceCodeDialog"
-                 Width="460"
+                 Width="520"
                  Title="Sign in to Microsoft Graph"
                  PrimaryButtonText="Copy code and open browser"
                  CloseButtonText="Hide"
                  DefaultButton="Primary">
-  <!-- PLACEHOLDER (Phase 1/2): minimal but working. Phase 3 builds the numbered steps, expiry
-       countdown and waiting line per spec section 5.4.2. -->
+  <!-- docs/design/ui-spec.md section 5.4.2. Width 520, not the spec's 460: the equal-width
+       button bar clips "Copy code and open browser" at 460. -->
+  <c:OverlayDialog.Styles>
+    <Style Selector="TextBlock.step">
+      <Setter Property="Width" Value="20"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="PathIcon.secondary">
+      <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+    </Style>
+    <Style Selector="PathIcon.caution">
+      <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}"/>
+    </Style>
+  </c:OverlayDialog.Styles>
+
   <StackPanel Spacing="12">
-    <TextBlock x:Name="UriText" Classes="body" TextWrapping="Wrap"/>
-    <Border Classes="card" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" MinHeight="64">
-      <SelectableTextBlock x:Name="CodeText"
-                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                           TextWrapping="Wrap"
-                           FontFamily="{DynamicResource FontFamilyMono}"
-                           FontSize="28" FontWeight="SemiBold" LetterSpacing="2"/>
-    </Border>
-    <StackPanel Orientation="Horizontal" Spacing="8">
-      <c:ProgressRing x:Name="WaitingRing" Width="16" Height="16"/>
-      <TextBlock Classes="body secondary" Text="Waiting for you to finish signing in…"
-                 AutomationProperties.LiveSetting="Polite"/>
+    <!-- 1  Open microsoft.com/devicelogin -->
+    <StackPanel Orientation="Horizontal">
+      <TextBlock Classes="body step" Text="1"/>
+      <TextBlock Classes="body" Text="Open" VerticalAlignment="Center" Margin="0,0,4,0"/>
+      <HyperlinkButton x:Name="UriLink" Padding="0" VerticalAlignment="Center">
+        <StackPanel Orientation="Horizontal" Spacing="4">
+          <TextBlock x:Name="UriText" VerticalAlignment="Center"/>
+          <PathIcon Data="{StaticResource Icon.Open12}" Width="12" Height="12" VerticalAlignment="Center"/>
+        </StackPanel>
+      </HyperlinkButton>
+    </StackPanel>
+
+    <!-- 2  Enter this code -->
+    <StackPanel Spacing="8">
+      <StackPanel Orientation="Horizontal">
+        <TextBlock Classes="body step" Text="2"/>
+        <TextBlock Classes="body" Text="Enter this code:" VerticalAlignment="Center"/>
+      </StackPanel>
+      <Border CornerRadius="4" MinHeight="64" Padding="16,8"
+              Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
+              BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+        <Grid ColumnDefinitions="*,Auto">
+          <SelectableTextBlock x:Name="CodeText"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               FontFamily="{DynamicResource FontFamilyMono}"
+                               FontSize="28" FontWeight="SemiBold" LetterSpacing="2"
+                               AutomationProperties.Name="Sign-in code"/>
+          <SelectableTextBlock x:Name="MessageText" Classes="body" TextWrapping="Wrap"
+                               VerticalAlignment="Center" IsVisible="False"/>
+          <c:CopyButton x:Name="CopyCode" Grid.Column="1" Label="Code" Width="32" Height="32"
+                        VerticalAlignment="Center"/>
+        </Grid>
+      </Border>
+      <Grid x:Name="ExpiryLine" ColumnDefinitions="Auto,6,*">
+        <PathIcon x:Name="ExpiryIcon" Data="{StaticResource Icon.Clock}" Width="12" Height="12"
+                  Classes="secondary" VerticalAlignment="Center"/>
+        <TextBlock x:Name="ExpiryText" Grid.Column="2" Classes="caption secondary" TextWrapping="Wrap"/>
+      </Grid>
+    </StackPanel>
+
+    <!-- 3  Sign in -->
+    <StackPanel Orientation="Horizontal">
+      <TextBlock Classes="body step" Text="3"/>
+      <TextBlock Classes="body" Text="Sign in with your admin account." VerticalAlignment="Center"/>
+    </StackPanel>
+
+    <StackPanel Spacing="4" Margin="0,8,0,0">
+      <StackPanel x:Name="WaitingLine" Orientation="Horizontal" Spacing="8">
+        <c:ProgressRing x:Name="WaitingRing" Width="16" Height="16"/>
+        <TextBlock Classes="body secondary" Text="Waiting for you to finish signing in…"
+                   VerticalAlignment="Center" AutomationProperties.LiveSetting="Polite"/>
+      </StackPanel>
+      <TextBlock x:Name="CacheText" Classes="caption tertiary" TextWrapping="Wrap"/>
     </StackPanel>
   </StackPanel>
 </c:OverlayDialog>

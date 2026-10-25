@@ -432,7 +432,12 @@ public partial class SettingsPage : UserControl, IShellPage
         }
         catch (Exception ex)
         {
-            _shell?.ShowToast($"Couldn't save settings: {ex.Message}", ToastKind.Error);
+            if (_shell is not null)
+            {
+                _ = _shell.ShowDialogAsync(new MessageDialog("Couldn't save settings", ex.Message,
+                    severity: InfoBarSeverity.Error));
+            }
+
             return false;
         }
 
