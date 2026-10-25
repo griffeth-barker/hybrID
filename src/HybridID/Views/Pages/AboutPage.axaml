@@ -1,15 +1,59 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="using:HybridID.Controls"
              x:Class="HybridID.Views.Pages.AboutPage">
-  <!-- PLACEHOLDER (Phase 1/2): replaced by the full page in a later phase. -->
+  <!-- About page, docs/design/ui-spec.md section 5.3. -->
   <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-    <StackPanel Margin="{DynamicResource PagePadding}"
-                MaxWidth="1000"
-                HorizontalAlignment="Stretch"
-                Spacing="8">
-      <TextBlock Classes="title" Text="About" AutomationProperties.HeadingLevel="1"/>
-      <TextBlock Classes="body secondary" TextWrapping="Wrap"
-                 Text="The about page is being implemented (spec section 5.3, Phase 5)."/>
+    <StackPanel MaxWidth="1000" Margin="32,24,32,32" Spacing="4">
+      <TextBlock Classes="title" Text="About" Margin="0,0,0,12" AutomationProperties.HeadingLevel="1"/>
+
+      <Border Classes="card" Padding="24">
+        <Grid ColumnDefinitions="Auto,20,*,Auto">
+          <Image Source="avares://HybridID/Assets/hybrid-icon.png" Width="64" Height="64" VerticalAlignment="Top"/>
+          <StackPanel Grid.Column="2" Spacing="2" VerticalAlignment="Center">
+            <TextBlock Classes="subtitle" Text="hybrID" AutomationProperties.HeadingLevel="2"/>
+            <TextBlock x:Name="VersionText" Classes="body secondary"/>
+            <TextBlock Classes="body" TextWrapping="Wrap" Margin="0,6,0,0"
+                       Text="Know where to manage identity objects in hybrid Microsoft environments."/>
+          </StackPanel>
+          <Button x:Name="BtnCopyVersion" Grid.Column="3" VerticalAlignment="Top" Margin="12,0,0,0">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <PathIcon Data="{StaticResource Icon.Copy}" Width="16" Height="16"/>
+              <TextBlock Text="Copy version info" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+        </Grid>
+      </Border>
+
+      <c:SettingsCard x:Name="SourceCard" Header="Source code" HeaderIcon="{StaticResource Icon.Code20}"
+                      Description="github.com/griffeth-barker/hybrID"
+                      IsClickEnabled="True" ActionIcon="{StaticResource Icon.Open}"/>
+      <c:SettingsCard x:Name="IssuesCard" Header="Report an issue" HeaderIcon="{StaticResource Icon.Bug20}"
+                      Description="Opens GitHub Issues in your browser"
+                      IsClickEnabled="True" ActionIcon="{StaticResource Icon.Open}"/>
+      <c:SettingsCard x:Name="LicenseCard" Header="License" HeaderIcon="{StaticResource Icon.Certificate20}"
+                      Description="MIT License · © 2026 Griffeth Barker"/>
+
+      <Expander Classes="settings">
+        <Expander.Header>
+          <c:SettingsCard Classes="header" Header="Third-party software" HeaderIcon="{StaticResource Icon.Box20}"
+                          Description="Open-source components hybrID is built with"/>
+        </Expander.Header>
+        <StackPanel x:Name="ThirdPartyRows"/>
+      </Expander>
+
+      <Expander Classes="settings">
+        <Expander.Header>
+          <c:SettingsCard Classes="header" Header="System information" HeaderIcon="{StaticResource Icon.Server20}"
+                          Description="Include this when reporting an issue"/>
+        </Expander.Header>
+        <StackPanel>
+          <StackPanel x:Name="SystemRows"/>
+          <c:SettingsCard Classes="nested">
+            <Button x:Name="BtnCopySystem" Content="Copy"/>
+          </c:SettingsCard>
+        </StackPanel>
+      </Expander>
     </StackPanel>
   </ScrollViewer>
 </UserControl>

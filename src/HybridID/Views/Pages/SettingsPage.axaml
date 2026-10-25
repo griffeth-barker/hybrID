@@ -1,15 +1,213 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="using:HybridID.Controls"
              x:Class="HybridID.Views.Pages.SettingsPage">
-  <!-- PLACEHOLDER (Phase 1/2): replaced by the full page in a later phase. -->
-  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-    <StackPanel Margin="{DynamicResource PagePadding}"
-                MaxWidth="1000"
-                HorizontalAlignment="Stretch"
-                Spacing="8">
-      <TextBlock Classes="title" Text="Settings" AutomationProperties.HeadingLevel="1"/>
-      <TextBlock Classes="body secondary" TextWrapping="Wrap"
-                 Text="The settings page is being implemented (spec section 5.2, Phase 5)."/>
-    </StackPanel>
-  </ScrollViewer>
+  <!-- Settings page, docs/design/ui-spec.md section 5.2. Appearance saves immediately; every
+       other field is staged behind the SaveBar. -->
+  <UserControl.Styles>
+    <Style Selector="TextBlock.section">
+      <Setter Property="Margin" Value="1,28,0,8"/>
+    </Style>
+    <Style Selector="PathIcon.success"><Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/></Style>
+    <Style Selector="PathIcon.caution"><Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}"/></Style>
+    <Style Selector="PathIcon.critical"><Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}"/></Style>
+
+    <!-- Link template rows inside the Management links expander. -->
+    <Style Selector="Border.templateRow">
+      <Setter Property="Padding" Value="58,12,16,12"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
+      <Setter Property="BorderThickness" Value="0,1,0,0"/>
+    </Style>
+    <Style Selector="Border.templateRow:nth-child(1)">
+      <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+
+    <!-- SaveBar entrance (16 px rise + fade). -->
+    <Style Selector="Border#SaveBar">
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+          <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.25" Easing="CubicEaseOut"/>
+        </Transitions>
+      </Setter>
+    </Style>
+  </UserControl.Styles>
+
+  <Grid RowDefinitions="*,Auto">
+    <ScrollViewer Grid.RowSpan="2" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel MaxWidth="1000" Margin="32,24,32,96">
+        <TextBlock Classes="title" Text="Settings" Margin="0,0,0,8" AutomationProperties.HeadingLevel="1"/>
+        <c:InfoBar x:Name="SavedBar" Severity="Success" Title="Settings saved" IsOpen="False" Margin="0,8,0,0"/>
+
+        <!-- ================================================== Active Directory -->
+        <TextBlock Classes="bodyStrong section" Text="Active Directory" Margin="1,16,0,8"
+                   AutomationProperties.HeadingLevel="2"/>
+        <StackPanel Spacing="4">
+          <c:SettingsCard Header="Domain controller" HeaderIcon="{StaticResource Icon.Server20}"
+                          Description="Hostname of the DC to query over LDAP. No domain join required.">
+            <TextBox x:Name="CfgLdapServer" Classes="settingsInput" PlaceholderText="dc01.contoso.com"
+                     AutomationProperties.Name="Domain controller"/>
+          </c:SettingsCard>
+          <c:SettingsCard Header="Encryption" HeaderIcon="{StaticResource Icon.ShieldLock20}"
+                          Description="LDAPS works on every OS. StartTLS works only on Windows.">
+            <ComboBox x:Name="CmbLdapEncryption" Classes="settingsInput" AutomationProperties.Name="Encryption">
+              <ComboBoxItem Content="LDAPS (recommended)"/>
+              <ComboBoxItem x:Name="ItemStartTls" Content="StartTLS (Windows only)"/>
+              <ComboBoxItem Content="None (insecure – lab use only)"/>
+            </ComboBox>
+          </c:SettingsCard>
+          <c:InfoBar x:Name="NoEncryptionBar" Severity="Error" IsClosable="False" IsOpen="False"
+                     Title="Credentials are sent unencrypted"
+                     Message="Use only against a disposable lab domain controller."/>
+          <c:InfoBar x:Name="StartTlsUnsupportedBar" Severity="Warning" IsClosable="False" IsOpen="False"
+                     Title="StartTLS isn't supported on this OS." Message="Switch to LDAPS."/>
+          <c:SettingsCard Header="Port" HeaderIcon="{StaticResource Icon.NumberSymbol20}"
+                          Description="636 for LDAPS, 389 for StartTLS or no encryption.">
+            <NumericUpDown x:Name="CfgLdapPort" Width="140" Minimum="1" Maximum="65535" Increment="1"
+                           FormatString="0" AutomationProperties.Name="Port"/>
+          </c:SettingsCard>
+          <Expander x:Name="LdapAdvanced" Classes="settings">
+            <Expander.Header>
+              <c:SettingsCard Classes="header" Header="Advanced" HeaderIcon="{StaticResource Icon.Settings}"
+                              Description="Base DN and certificate validation"/>
+            </Expander.Header>
+            <StackPanel>
+              <c:SettingsCard Classes="nested" Header="Base DN"
+                              Description="Leave blank to auto-discover from the server's RootDSE.">
+                <TextBox x:Name="CfgLdapBaseDn" Classes="settingsInput mono" PlaceholderText="DC=contoso,DC=com"
+                         AutomationProperties.Name="Base DN"/>
+              </c:SettingsCard>
+              <c:SettingsCard x:Name="SkipCertCard" Classes="nested" Header="Skip certificate validation"
+                              Description="Self-signed lab DCs only. Never use in production.">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Button x:Name="BtnCopyCertCommand" Content="Copy command" IsVisible="False"/>
+                  <ToggleSwitch x:Name="ChkLdapSkipCert" OnContent="On" OffContent="Off"
+                                AutomationProperties.Name="Skip certificate validation"/>
+                </StackPanel>
+              </c:SettingsCard>
+              <c:InfoBar x:Name="SkipCertBar" Severity="Warning" IsClosable="False" IsOpen="False"
+                         Title="Certificate validation is off."/>
+            </StackPanel>
+          </Expander>
+          <c:SettingsCard x:Name="TestLdapCard" Header="Test connection" HeaderIcon="{StaticResource Icon.PlugConnected20}"
+                          Description="Uses the values above, even if they aren't saved yet.">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <c:ProgressRing x:Name="TestLdapRing" Width="16" Height="16" IsActive="False" IsVisible="False"/>
+              <Button x:Name="BtnTestLdap" Content="Test connection"/>
+            </StackPanel>
+          </c:SettingsCard>
+        </StackPanel>
+
+        <!-- ================================================== Exchange -->
+        <TextBlock Classes="bodyStrong section" Text="Exchange" AutomationProperties.HeadingLevel="2"/>
+        <StackPanel Spacing="4">
+          <c:SettingsCard x:Name="FqdnCard" Header="On-premises Exchange server" HeaderIcon="{StaticResource Icon.Mail20}">
+            <TextBox x:Name="CfgFqdn" Classes="settingsInput" PlaceholderText="mail.contoso.com"
+                     AutomationProperties.Name="On-premises Exchange server"/>
+          </c:SettingsCard>
+        </StackPanel>
+
+        <!-- ================================================== Microsoft Graph -->
+        <TextBlock Classes="bodyStrong section" Text="Microsoft Graph" AutomationProperties.HeadingLevel="2"/>
+        <StackPanel Spacing="4">
+          <c:SettingsCard Header="Tenant" HeaderIcon="{StaticResource Icon.Cloud20}"
+                          Description="organizations, common, a tenant ID, or a verified domain.">
+            <TextBox x:Name="CfgGraphTenant" Classes="settingsInput" PlaceholderText="organizations"
+                     AutomationProperties.Name="Tenant"/>
+          </c:SettingsCard>
+          <Expander x:Name="GraphAdvanced" Classes="settings">
+            <Expander.Header>
+              <c:SettingsCard Classes="header" Header="Advanced" HeaderIcon="{StaticResource Icon.Settings}"
+                              Description="Client ID for your own app registration"/>
+            </Expander.Header>
+            <c:SettingsCard x:Name="ClientIdCard" Classes="nested" Header="Client ID">
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <TextBox x:Name="CfgGraphClientId" Classes="mono" Width="320" AutomationProperties.Name="Client ID"/>
+                <Button x:Name="BtnResetClientId" Classes="subtle icon" Width="32" Height="32"
+                        ToolTip.Tip="Reset to default" AutomationProperties.Name="Reset client ID to default">
+                  <PathIcon Data="{StaticResource Icon.ArrowReset}" Width="16" Height="16"/>
+                </Button>
+              </StackPanel>
+            </c:SettingsCard>
+          </Expander>
+          <c:SettingsCard x:Name="TestGraphCard" Header="Test connection" HeaderIcon="{StaticResource Icon.PlugConnected20}"
+                          Description="Uses the values above, even if they aren't saved yet.">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <c:ProgressRing x:Name="TestGraphRing" Width="16" Height="16" IsActive="False" IsVisible="False"/>
+              <Button x:Name="BtnTestGraph" Content="Test connection"/>
+            </StackPanel>
+          </c:SettingsCard>
+        </StackPanel>
+
+        <!-- ================================================== Appearance -->
+        <TextBlock Classes="bodyStrong section" Text="Appearance" AutomationProperties.HeadingLevel="2"/>
+        <c:SettingsCard Header="App theme" HeaderIcon="{StaticResource Icon.Theme}"
+                        Description="Choose light or dark, or follow your system.">
+          <ComboBox x:Name="CmbTheme" Classes="settingsInput" AutomationProperties.Name="App theme">
+            <ComboBoxItem Content="Use system setting"/>
+            <ComboBoxItem Content="Light"/>
+            <ComboBoxItem Content="Dark"/>
+          </ComboBox>
+        </c:SettingsCard>
+
+        <!-- ================================================== Management links -->
+        <TextBlock Classes="bodyStrong section" Text="Management links" AutomationProperties.HeadingLevel="2"/>
+        <Expander Classes="settings">
+          <Expander.Header>
+            <c:SettingsCard Classes="header" Header="Link templates" HeaderIcon="{StaticResource Icon.Link20}"
+                            Description="URL templates for deep links. {id} is the object's ID; {fqdn} is your Exchange server."/>
+          </Expander.Header>
+          <StackPanel>
+            <StackPanel x:Name="TemplateRows"/>
+            <Border Classes="templateRow" BorderThickness="0,1,0,0">
+              <Button x:Name="BtnResetTemplates" Content="Reset all to defaults"/>
+            </Border>
+          </StackPanel>
+        </Expander>
+
+        <!-- ================================================== Configuration -->
+        <TextBlock Classes="bodyStrong section" Text="Configuration" AutomationProperties.HeadingLevel="2"/>
+        <c:SettingsCard Header="Configuration file" HeaderIcon="{StaticResource Icon.Document20}">
+          <c:SettingsCard.Description>
+            <SelectableTextBlock x:Name="ConfigPathText" Classes="caption mono secondary" TextWrapping="Wrap"/>
+          </c:SettingsCard.Description>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button x:Name="BtnCopyConfigPath" Content="Copy path"/>
+            <Button x:Name="BtnOpenConfigFolder">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <PathIcon Data="{StaticResource Icon.Folder}" Width="16" Height="16"/>
+                <TextBlock Text="Open folder" VerticalAlignment="Center"/>
+              </StackPanel>
+            </Button>
+          </StackPanel>
+        </c:SettingsCard>
+
+        <!-- ================================================== About -->
+        <TextBlock Classes="bodyStrong section" Text="About" AutomationProperties.HeadingLevel="2"/>
+        <c:SettingsCard x:Name="AboutCard" Header="About hybrID" HeaderIcon="{StaticResource Icon.Info20}"
+                        IsClickEnabled="True"/>
+      </StackPanel>
+    </ScrollViewer>
+
+    <!-- ==================================================== SaveBar -->
+    <Border x:Name="SaveBar" Grid.Row="1" MaxWidth="1000" Margin="32,0,32,16" MinHeight="64"
+            Padding="16,12" CornerRadius="8" BorderThickness="1"
+            Background="{DynamicResource SolidBackgroundFillColorQuarternaryBrush}"
+            BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
+            BoxShadow="{DynamicResource ShadowFlyout}"
+            IsVisible="False">
+      <Grid ColumnDefinitions="Auto,12,*,Auto">
+        <PathIcon Data="{StaticResource Icon.Info}" Width="16" Height="16" VerticalAlignment="Center"/>
+        <StackPanel Grid.Column="2" VerticalAlignment="Center">
+          <TextBlock Classes="bodyStrong" Text="Unsaved changes"/>
+          <TextBlock x:Name="SaveBarSignOutText" Classes="caption secondary" TextWrapping="Wrap" IsVisible="False"
+                     Text="Saving signs you out of Active Directory and Microsoft Graph."/>
+        </StackPanel>
+        <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Button x:Name="BtnDiscard" Content="Discard"/>
+          <Button x:Name="BtnSave" Classes="accent" Content="Save"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
 </UserControl>
