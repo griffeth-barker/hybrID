@@ -5,7 +5,8 @@
 1.  Download the published build for your OS (or build it yourself — see [build](/docs/build.md)) and run it. No PowerShell, RSAT, or Graph module install is required.
 2.  On first launch, hybrID seeds a per-user config file from its bundled defaults:
     - **Windows:** `%APPDATA%\hybrID\config.json`
-    - **macOS/Linux:** `~/.config/hybrID/config.json`
+    - **macOS:** `~/Library/Application Support/hybrID/config.json`
+    - **Linux:** `~/.config/hybrID/config.json`
 3.  Open **Settings** (gear icon in the status bar) and configure your environment before your first search.
 
 ![](/assets/screenshot-main-ui.png)

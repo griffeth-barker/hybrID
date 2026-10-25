@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Active Directory Queries:** Moved from the RSAT `ActiveDirectory` PowerShell module (`Get-ADObject`) to direct LDAP queries via `System.DirectoryServices.Protocols`. No domain join or RSAT install is required anymore.
   - **Entra ID / Graph Queries:** Moved from the Microsoft Graph PowerShell SDK to the native Microsoft.Graph C# SDK, authenticating via device-code sign-in.
   - **Zero Runtime Prerequisites:** The app is now published as a self-contained, single-file executable per platform. Running it no longer requires PowerShell, RSAT, or the Graph PowerShell modules to be installed.
-  - **Configuration Location:** Moved from an in-repo `config.json` (edited in place inside the install directory) to a per-user profile directory (`%APPDATA%\hybrID\config.json` on Windows, `~/.config/hybrID/config.json` on macOS/Linux), seeded from a bundled default on first run.
+  - **Configuration Location:** Moved from an in-repo `config.json` (edited in place inside the install directory) to a per-user profile directory (`%APPDATA%\hybrID\config.json` on Windows, `~/Library/Application Support/hybrID/config.json` on macOS, `~/.config/hybrID/config.json` on Linux), seeded from a bundled default on first run.
   - **Live Theme Switching:** Theme changes now apply immediately across all open windows; the old restart-required mechanism is gone.
   - **Breaking Change:** Existing `config.json` files from 0.1.x are not compatible with the new schema (new LDAP server/port/encryption fields, Graph Tenant ID). Reconfigure via the Settings window after upgrading.
 

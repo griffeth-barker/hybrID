@@ -47,7 +47,7 @@ There is no automated test suite yet (see `docs/roadmap.md`). Verify changes by 
 
 ### Config
 
-Per-user JSON file, not in the repo: `%APPDATA%\hybrID\config.json` (Windows) or `~/.config/hybrID/config.json` (macOS/Linux via `Environment.SpecialFolder.ApplicationData`), seeded on first run from `src/HybridID/config.default.json`. Schema: `settings` (On-Prem Exchange FQDN, LDAP server/port/encryption/base DN, Graph Tenant ID, Theme) and `managementUrls` (URL templates with `{id}`/`{fqdn}` placeholders).
+Per-user JSON file, not in the repo: `%APPDATA%\hybrID\config.json` (Windows) or `~/Library/Application Support/hybrID/config.json` (macOS) or `~/.config/hybrID/config.json` (Linux), all via `Environment.SpecialFolder.ApplicationData`, seeded on first run from `src/HybridID/config.default.json`. Schema: `settings` (On-Prem Exchange FQDN, LDAP server/port/encryption/base DN, Graph Tenant ID, Theme) and `managementUrls` (URL templates with `{id}`/`{fqdn}` placeholders).
 
 ### Adding a new setting
 

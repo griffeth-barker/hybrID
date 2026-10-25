@@ -14,7 +14,9 @@ using HybridID.Views.Pages;
 //
 //   dotnet run --project tools/HybridID.Screenshots -- [outDir] [identity ...]
 //
-// No identities = the default set. Use "idle" for the empty state, "w=640" to change width.
+// No identities = the default set. Use "idle" for the empty state, "w=640" to change width,
+// "settings" / "about" for those pages, a "+" suffix ("settings+") to expand every expander,
+// and "settings-dirty" for staged (unsaved, never written) edits that show the SaveBar.
 Environment.SetEnvironmentVariable("HYBRID_PREVIEW", "1");
 
 var outDir = args.Length > 0 ? args[0] : Path.Combine(Directory.GetCurrentDirectory(), "screenshots");
@@ -49,9 +51,32 @@ foreach (var theme in new[] { "Light", "Dark" })
         window.Show();
         Pump(TimeSpan.FromMilliseconds(300));
 
-        var page = window.GetVisualDescendants().OfType<SearchPage>().First();
-        if (scenario != "idle")
+        var pageName = scenario.TrimEnd('+');
+        if (pageName is "settings" or "about" or "settings-dirty")
         {
+            window.Navigate(pageName == "about" ? AppPage.About : AppPage.Settings);
+            Pump(TimeSpan.FromMilliseconds(600));
+            if (pageName == "settings-dirty")
+            {
+                var settings = window.GetVisualDescendants().OfType<SettingsPage>().First();
+                settings.FindControl<TextBox>("CfgLdapServer")!.Text = "dc01.contoso.com";
+                settings.FindControl<ComboBox>("CmbLdapEncryption")!.SelectedIndex = 2;
+                Pump(TimeSpan.FromMilliseconds(600));
+            }
+
+            if (scenario.EndsWith('+'))
+            {
+                foreach (var expander in window.GetVisualDescendants().OfType<Expander>())
+                {
+                    expander.IsExpanded = true;
+                }
+
+                Pump(TimeSpan.FromMilliseconds(600));
+            }
+        }
+        else if (scenario != "idle")
+        {
+            var page = window.GetVisualDescendants().OfType<SearchPage>().First();
             page.FindControl<TextBox>("TxtSearch")!.Text = scenario;
             page.FindControl<Button>("BtnLocate")!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             Pump(TimeSpan.FromMilliseconds(2600));
